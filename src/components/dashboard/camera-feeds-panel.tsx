@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { CameraIcon } from "./camera-icon";
+import { Video } from "lucide-react";
 
 type CameraFeed = {
   title: string;
@@ -54,7 +55,7 @@ function CameraCard({
       className={`border px-4 py-3 text-left shadow-[0_0_0_1px_rgba(26,58,56,0.45)_inset] transition-colors ${
         isSelected
           ? "border-lime-neon bg-surface"
-          : "border-white/10 bg-surface hover:bg-white/5"
+          : "border-border bg-surface hover:bg-foreground/5"
       }`}
     >
       <div className="mb-8 flex items-center justify-between text-sm text-sage-dingin relative z-10">
@@ -114,7 +115,7 @@ export function CameraFeedsPanel({
       const { data, error } = await supabase
         .from("image_mission")
         .select("image_url, image_slot_name")
-        .order("id", { ascending: false });
+        .order("created_at", { ascending: false });
       if (!error && data) {
         const newMap: Record<string, string> = {};
         data.forEach((row: any) => {
@@ -152,11 +153,12 @@ export function CameraFeedsPanel({
   };
 
   return (
-    <aside className="flex flex-col gap-0 border border-white/10 bg-surface-strong shadow-[0_0_0_1px_rgba(26,58,56,0.28)_inset]">
-      <div className="border-b border-white/10 px-5 py-4 text-[1.05rem] text-kapur-muda">
+    <aside className="flex min-h-0 flex-col gap-0 border border-border bg-surface-strong shadow-[0_0_0_1px_var(--border)_inset]">
+      <div className="flex items-center gap-2.5 shrink-0 border-b border-border px-5 py-4 text-[1.05rem] text-kapur-muda font-medium tracking-wide">
+        <Video className="h-4 w-4 text-lime-neon" />
         Camera Feeds
       </div>
-      <div className="grid gap-px bg-white/10">
+      <div className="grid gap-px bg-foreground/10 overflow-y-auto">
         {CAMERA_BASE_DATA.map((feed) => (
           <CameraCard
             key={feed.title}

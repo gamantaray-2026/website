@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { missionSteps } from "@/utils/dashboard-data";
+import { Compass, ListChecks } from "lucide-react";
 
 type NavData = {
   latitude: number;
@@ -91,12 +92,13 @@ export function NavigationPanel({
   ];
 
   return (
-    <aside className="flex flex-col gap-5">
-      <section className="border border-white/10 bg-surface-strong shadow-[0_0_0_1px_rgba(26,58,56,0.28)_inset]">
-        <div className="border-b border-white/10 px-5 py-4 text-[1.05rem] text-kapur-muda">
+    <aside className="flex min-h-0 flex-col gap-5">
+      <section className="border border-border bg-surface-strong shadow-[0_0_0_1px_var(--border)_inset]">
+        <div className="flex items-center gap-2.5 border-b border-border px-5 py-4 text-[1.05rem] text-kapur-muda font-medium tracking-wide">
+          <Compass className="h-4 w-4 text-lime-neon" />
           Navigation Data
         </div>
-        <div className="grid grid-cols-2 divide-x divide-y divide-white/10">
+        <div className="grid grid-cols-2 divide-x divide-y divide-border">
           {dynamicMetrics.map((metric) => (
             <div key={metric.label} className="px-4 py-5">
               <p className="text-sm font-semibold text-sage-dingin">
@@ -110,14 +112,17 @@ export function NavigationPanel({
         </div>
       </section>
 
-      <section className="flex flex-1 flex-col border border-white/10 bg-surface-strong shadow-[0_0_0_1px_rgba(26,58,56,0.28)_inset]">
-        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-          <h2 className="text-[1.05rem] text-kapur-muda">Mission Log</h2>
+      <section className="flex min-h-0 flex-1 flex-col border border-border bg-surface-strong shadow-[0_0_0_1px_var(--border)_inset]">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
+          <h2 className="flex items-center gap-2.5 text-[1.05rem] text-kapur-muda font-medium tracking-wide">
+            <ListChecks className="h-4 w-4 text-lime-neon" />
+            Mission Log
+          </h2>
           <span className="text-sm font-semibold text-sage-dingin">
             Tahap 1
           </span>
         </div>
-        <ul className="divide-y divide-white/10">
+        <ul className="divide-y divide-border overflow-y-auto">
           {missionSteps.map((step) => {
             const isActive = step.id === activeStepId;
 
@@ -127,7 +132,7 @@ export function NavigationPanel({
                 className={`flex items-center gap-3 px-5 py-4 text-lg transition-colors ${
                   isActive
                     ? "bg-lime-neon text-midnight-hitam"
-                    : "text-kapur-muda/92 hover:bg-white/5"
+                    : "text-kapur-muda/92 hover:bg-foreground/5"
                 }`}
               >
                 <button
@@ -137,7 +142,7 @@ export function NavigationPanel({
                 >
                   <span
                     className={`h-2.5 w-2.5 rounded-full ${
-                      isActive ? "bg-midnight-hitam" : "bg-white/20"
+                      isActive ? "bg-midnight-hitam" : "bg-foreground/20"
                     }`}
                   />
                   <span className="font-medium">{step.label}</span>

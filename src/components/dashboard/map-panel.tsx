@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabaseClient";
-import { Check, PenTool, RefreshCw, X, Maximize } from "lucide-react";
+import { Check, PenTool, RefreshCw, X, Maximize, Map } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import type { CogData, MapState, NavData, Waypoints, WaypointType } from "./MapLeaflet";
@@ -179,16 +179,17 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
   const routeLabel = activeRoute === "A" ? "Lintasan A" : "Lintasan B";
 
   return (
-    <section className="flex min-w-0 flex-col border border-white/10 bg-surface-strong shadow-[0_0_0_1px_rgba(26,58,56,0.28)_inset]">
-      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-        <div className="flex items-center gap-4">
-          <h2 className="text-[1.05rem] text-kapur-muda">Real-Time Map</h2>
+    <section className="flex min-w-0 flex-col border border-border bg-surface-strong shadow-[0_0_0_1px_var(--border)_inset]">
+      <div className="flex items-center justify-between border-b border-border px-5 py-4">
+        <div className="flex items-center gap-2.5">
+          <Map className="h-4 w-4 text-lime-neon" />
+          <h2 className="text-[1.05rem] text-kapur-muda font-medium tracking-wide">Real-Time Map</h2>
         </div>
 
         <div className="flex gap-2 text-sm">
           {!centerEditMode ? (
             <button
-              className="inline-flex items-center justify-center rounded-sm text-sm transition-colors border border-white/10 text-kapur-muda/80 hover:bg-white/5 px-3 py-1.5 gap-2"
+              className="inline-flex items-center justify-center rounded-sm text-sm transition-colors border border-border text-kapur-muda/80 hover:bg-foreground/5 px-3 py-1.5 gap-2"
               onClick={startEditCenter}
             >
               <PenTool className="h-3 w-3" />
@@ -204,7 +205,7 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
                 <span>Confirm</span>
               </button>
               <button
-                className="inline-flex items-center justify-center rounded-sm text-sm transition-colors border border-white/10 text-kapur-muda/80 hover:bg-white/5 px-3 py-1.5 gap-2"
+                className="inline-flex items-center justify-center rounded-sm text-sm transition-colors border border-border text-kapur-muda/80 hover:bg-foreground/5 px-3 py-1.5 gap-2"
                 onClick={() => {
                   setCenterEditMode(false);
                   setCenterDraft(null);
@@ -216,7 +217,7 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
             </div>
           )}
 
-          <div className="w-px h-6 bg-white/10 my-auto mx-2" />
+          <div className="w-px h-6 bg-foreground/10 my-auto mx-2" />
 
           <button
             type="button"
@@ -224,7 +225,7 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
             className={`border px-4 py-1.5 transition-colors ${
               activeRoute === "A"
                 ? "border-lime-neon bg-lime-neon text-midnight-hitam"
-                : "border-white/10 text-kapur-muda/80 hover:bg-white/5"
+                : "border-border text-kapur-muda/80 hover:bg-foreground/5"
             }`}
           >
             Lintasan A
@@ -235,7 +236,7 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
             className={`border px-4 py-1.5 transition-colors ${
               activeRoute === "B"
                 ? "border-lime-neon bg-lime-neon text-midnight-hitam"
-                : "border-white/10 text-kapur-muda/80 hover:bg-white/5"
+                : "border-border text-kapur-muda/80 hover:bg-foreground/5"
             }`}
           >
             Lintasan B
@@ -243,8 +244,8 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
         </div>
       </div>
 
-      <div className="relative flex min-h-[calc(100vh-13rem)] flex-1 overflow-hidden bg-[#dfeccf] p-5">
-        <div id="map-wrapper" className="absolute inset-5 border border-white/30 z-10">
+      <div className="relative flex min-h-0 flex-1 overflow-hidden bg-[#dfeccf]">
+        <div id="map-wrapper" className="absolute inset-0 z-10">
           <MapLeaflet
             supabase={supabase}
             navData={navData}
@@ -259,12 +260,12 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
           />
         </div>
         
-        <div className="absolute left-8 top-8 z-20 inline-flex bg-lime-neon px-3 py-1 text-sm text-midnight-hitam shadow-[0_0_0_1px_rgba(1,9,11,0.05)_inset]">
+        <div className="absolute right-4 top-4 z-20 inline-flex rounded-sm bg-lime-neon px-3 py-1 text-sm font-bold tracking-widest text-midnight-hitam shadow-md">
           {routeLabel}
         </div>
 
         {/* Map controls bottom left */}
-        <div className="absolute bottom-8 left-8 z-20 flex gap-2">
+        <div className="absolute bottom-6 left-4 z-20 flex gap-2">
           <button
             className="inline-flex items-center justify-center rounded-sm text-black hover:bg-white/90 h-10 px-4 transition-colors border border-black/10 bg-white shadow-md gap-2"
             onClick={refreshTrack}

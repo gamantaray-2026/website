@@ -167,45 +167,17 @@ export default function MapLeaflet({
 
   /** KUNCI MAP TOTAL */
   const lockMapTotal = (map: L.Map) => {
-    map.dragging.disable();
-    map.scrollWheelZoom.disable();
-    map.doubleClickZoom.disable();
-    map.boxZoom.disable();
-    map.keyboard?.disable?.();
-
-    // rotate plugin handlers
-    (map as any).dragRotate?.disable?.();
-    (map as any).touchRotate?.disable?.();
-    (map as any).rotate?.disable?.();
+    // Disabled to allow user map navigation
   };
 
   /** Bound super ketat supaya map tidak bisa pan sama sekali */
   const setTightBounds = (map: L.Map, center: [number, number]) => {
-    const delta = metersToLatLon(center[0], 0.001); // 1mm cukup buat desktop
-    const bounds = L.latLngBounds(
-      [center[0] - delta.dLat, center[1] - delta.dLon],
-      [center[0] + delta.dLat, center[1] + delta.dLon]
-    );
-    map.setMaxBounds(bounds);
-    (map as any).options.maxBoundsViscosity = 1.0;
+    // Disabled to allow user map navigation
   };
 
   /** Hard lock: kalau map bergerak sedikit pun, balikin */
   const enforceHardLock = (map: L.Map) => {
-    if (guardRef.current) return;
-
-    const [lat0, lon0] = lockedCenterRef.current;
-    const c = map.getCenter();
-
-    // kalau sama, jangan ngulang
-    const eps = 1e-12;
-    if (Math.abs(c.lat - lat0) <= eps && Math.abs(c.lng - lon0) <= eps) return;
-
-    guardRef.current = true;
-    map.stop();
-    map.setView([lat0, lon0], map.getZoom(), { animate: false });
-    (map as any).setBearing?.(MAP_BEARING_DEG);
-    guardRef.current = false;
+    // Disabled to allow user map navigation
   };
 
   /** Stop DOM event di marker biar map gak ikut drag */
@@ -411,20 +383,20 @@ export default function MapLeaflet({
     const map = (L as any).map("map", {
       center: initialCenter,
       zoom: 21,
-      zoomControl: false,
+      zoomControl: true,
 
-      dragging: false,
-      inertia: false,
-      scrollWheelZoom: false,
-      doubleClickZoom: false,
-      boxZoom: false,
-      keyboard: false,
+      dragging: true,
+      inertia: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      boxZoom: true,
+      keyboard: true,
       attributionControl: false,
 
       rotate: true,
       bearing: 0,
-      touchRotate: false,
-      dragRotate: false,
+      touchRotate: true,
+      dragRotate: true,
       rotateControl: false,
     });
 
