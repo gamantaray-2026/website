@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabaseClient";
-import { Check, PenTool, RefreshCw, X, Maximize, Map } from "lucide-react";
+import { Check, PenTool, RefreshCw, X, Maximize, Minimize, Map, Navigation, Target } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import type { CogData, MapState, NavData, Waypoints, WaypointType } from "./MapLeaflet";
@@ -15,8 +15,8 @@ type MissionName = (typeof MISSION_NAMES)[number];
 const waypointTypes: WaypointType[] = ["start", "buoys", "finish", "image_surface", "image_underwater"];
 
 const fallbackCenters: Record<MissionName, [number, number]> = {
-  lintasan1: [-7.7715, 110.3778],
-  lintasan2: [-7.7711, 110.3780],
+  lintasan1: [-7.769386, 110.382935], // Wisdom Park
+  lintasan2: [-7.769617, 110.382935], // Wisdom Park
 };
 
 function makeDefaultWaypoints(center: [number, number]): Waypoints {
@@ -58,6 +58,16 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
 
   const [centerEditMode, setCenterEditMode] = useState(false);
   const [centerDraft, setCenterDraft] = useState<[number, number] | null>(null);
+  const [mapCommand, setMapCommand] = useState<{ id: number; type: "ship" | "arena" } | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
   useEffect(() => {
     setMissionWaypoints((prev) => {
@@ -72,7 +82,7 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
 
   useEffect(() => {
     const loadAll = async () => {
-      const { data: cData } = await supabase.from("Center_Lintasan").select('"Lintasan","Latitude","Longititude"');
+      const { data: cData } = await supabase.from("Center_Lintasan").select("*");
       if (cData) {
         const next: Record<string, [number, number]> = { ...fallbackCenters };
         cData.forEach((row: any) => {
@@ -124,6 +134,76 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
     }).subscribe();
 
     return () => { supabase.removeChannel(navCh); supabase.removeChannel(cogCh); supabase.removeChannel(imgCh); };
+  }, []);
+
+  // ROS Integration via rosbridge_server
+  useEffect(() => {
+    let ros: any = null;
+    let gpsTopic: any = null;
+    let headingTopic: any = null;
+
+    const initRos = async () => {
+      try {
+        // Use dynamic import because roslib is an ES module
+        const ROSLIB = (await import("roslib")).default || await import("roslib");
+        
+        ros = new ROSLIB.Ros({
+          url: "ws://localhost:9090",
+        });
+
+        ros.on("connection", () => {
+          console.log("[ROS] Connected to rosbridge websocket server.");
+        });
+
+        ros.on("error", (error: any) => {
+          console.log("[ROS] Error connecting to websocket server: ", error);
+        });
+
+        ros.on("close", () => {
+          console.log("[ROS] Connection to websocket server closed.");
+        });
+
+        gpsTopic = new ROSLIB.Topic({
+          ros: ros,
+          name: "/mavros/global_position/global",
+          messageType: "sensor_msgs/NavSatFix",
+        });
+
+        gpsTopic.subscribe((message: any) => {
+          setNavData((prev: any) => ({
+            ...prev,
+            latitude: message.latitude,
+            longitude: message.longitude,
+            timestamp: new Date().toISOString(),
+            sog_ms: prev?.sog_ms ?? 2.0,
+          }));
+        });
+
+        headingTopic = new ROSLIB.Topic({
+          ros: ros,
+          name: "/mavros/global_position/compass_hdg",
+          messageType: "std_msgs/Float64",
+        });
+
+        headingTopic.subscribe((message: any) => {
+          setCogData((prev: any) => ({
+            ...prev,
+            cog: message.data,
+            timestamp: new Date().toISOString(),
+          }));
+        });
+      } catch (e) {
+        console.warn("[ROS] Error initializing roslib:", e);
+      }
+    };
+
+    initRos();
+
+    return () => {
+      if (gpsTopic) gpsTopic.unsubscribe();
+      if (headingTopic) headingTopic.unsubscribe();
+      if (ros) ros.close();
+    };
   }, []);
 
   useEffect(() => {
@@ -244,8 +324,8 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
         </div>
       </div>
 
-      <div className="relative flex min-h-0 flex-1 overflow-hidden bg-[#dfeccf]">
-        <div id="map-wrapper" className="absolute inset-0 z-10">
+      <div id="map-fullscreen-container" className="relative flex min-h-[400px] flex-1 overflow-hidden bg-[#dfeccf] xl:min-h-0">
+        <div className="absolute inset-0 z-10">
           <MapLeaflet
             supabase={supabase}
             navData={navData}
@@ -257,28 +337,19 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
             centerDraft={centerDraft}
             onCenterDraftChange={(lat, lng) => setCenterDraft([lat, lng])}
             onWaypointsChange={handleWaypointsChange}
+            mapCommand={mapCommand}
           />
         </div>
         
-        <div className="absolute right-4 top-4 z-20 inline-flex rounded-sm bg-lime-neon px-3 py-1 text-sm font-bold tracking-widest text-midnight-hitam shadow-md">
-          {routeLabel}
-        </div>
-
-        {/* Map controls bottom left */}
-        <div className="absolute bottom-6 left-4 z-20 flex gap-2">
+        <div className="absolute right-3 top-3 z-20 flex gap-2 items-start">
+          <div className="inline-flex rounded-sm bg-lime-neon px-2 py-1 h-8 items-center text-xs font-bold tracking-widest text-midnight-hitam shadow-md">
+            {routeLabel}
+          </div>
           <button
-            className="inline-flex items-center justify-center rounded-sm text-black hover:bg-white/90 h-10 px-4 transition-colors border border-black/10 bg-white shadow-md gap-2"
-            onClick={refreshTrack}
-          >
-            <RefreshCw className="h-4 w-4" />
-            <span className="text-sm font-semibold">Reset Track</span>
-          </button>
-
-          <button
-            className="inline-flex items-center justify-center rounded-sm text-black hover:bg-white/90 h-10 w-10 transition-colors border border-black/10 bg-white shadow-md"
+            className="inline-flex items-center justify-center rounded-md text-black hover:bg-slate-50 h-8 w-8 transition-colors border border-black/10 bg-white shadow-lg"
             title="Toggle Fullscreen"
             onClick={() => {
-              const mapEl = document.getElementById("map-wrapper");
+              const mapEl = document.getElementById("map-fullscreen-container");
               if (!document.fullscreenElement && mapEl) {
                 mapEl.requestFullscreen();
               } else if (document.exitFullscreen) {
@@ -286,10 +357,43 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
               }
             }}
           >
-            <Maximize className="h-4 w-4" />
+            {isFullscreen ? <Minimize className="h-3.5 w-3.5" /> : <Maximize className="h-3.5 w-3.5" />}
           </button>
+        </div>
+
+        {/* Map controls bottom left */}
+        <div className="absolute bottom-4 left-3 z-20 flex flex-col gap-2">
+          <div className="flex flex-col rounded-md bg-white shadow-lg border border-black/10 overflow-hidden text-black w-[130px]">
+            <button
+              className="inline-flex items-center justify-start hover:bg-slate-50 h-8 px-3 transition-colors gap-2"
+              onClick={() => setMapCommand({ id: Date.now(), type: "ship" })}
+              title="Locate Kapal"
+            >
+              <Navigation className="h-3.5 w-3.5" />
+              <span className="text-xs font-semibold">Kapal</span>
+            </button>
+            <div className="h-px w-full bg-black/10" />
+            <button
+              className="inline-flex items-center justify-start hover:bg-slate-50 h-8 px-3 transition-colors gap-2"
+              onClick={() => setMapCommand({ id: Date.now(), type: "arena" })}
+              title="Center Arena"
+            >
+              <Target className="h-3.5 w-3.5" />
+              <span className="text-xs font-semibold">Arena</span>
+            </button>
+            <div className="h-px w-full bg-black/10" />
+            <button
+              className="inline-flex items-center justify-start hover:bg-slate-50 h-8 px-3 transition-colors gap-2"
+              onClick={refreshTrack}
+              title="Reset Track"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span className="text-xs font-semibold">Reset</span>
+            </button>
+          </div>
         </div>
       </div>
     </section>
   );
 }
+

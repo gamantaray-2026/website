@@ -14,11 +14,11 @@ export function DashboardView() {
   const [selectedCameraFeed, setSelectedCameraFeed] = useState("SL");
 
   return (
-    <main className="h-screen w-screen overflow-hidden bg-background text-foreground">
-      <div className="mx-auto flex h-full max-w-[1920px] flex-col px-5 pb-5 pt-4 sm:px-6 lg:px-7">
+    <main className="min-h-screen w-full overflow-y-auto overflow-x-hidden bg-background text-foreground xl:h-screen xl:w-screen xl:overflow-hidden">
+      <div className="mx-auto flex h-full min-h-screen max-w-[1920px] flex-col px-5 pb-5 pt-4 sm:px-6 lg:px-7 xl:min-h-0">
         <DashboardHeader />
 
-        <div className="grid min-h-0 flex-1 gap-5 pt-5 xl:grid-cols-[340px_minmax(0,1fr)_340px]">
+        <div className="grid flex-1 gap-5 pt-5 xl:min-h-0 xl:grid-cols-[340px_minmax(0,1fr)_340px]">
           <NavigationPanel
             activeStepId={activeMissionStepId}
             onStepChange={setActiveMissionStepId}

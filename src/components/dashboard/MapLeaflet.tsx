@@ -121,6 +121,7 @@ export default function MapLeaflet({
   centerDraft,
   onCenterDraftChange,
   onWaypointsChange,
+  mapCommand,
 }: {
   supabase: SupabaseClient;
 
@@ -136,6 +137,7 @@ export default function MapLeaflet({
   onCenterDraftChange: (lat: number, lng: number) => void;
 
   onWaypointsChange: (missionType: string, newWaypoints: Waypoints) => void;
+  mapCommand: { id: number; type: "ship" | "arena" } | null;
 }) {
   const mapRef = useRef<L.Map | null>(null);
 
@@ -371,6 +373,22 @@ export default function MapLeaflet({
     });
   };
 
+  /** COMMAND EFFECT (Locate Ship / Center Arena) */
+  useEffect(() => {
+    if (!mapRef.current || !mapCommand) return;
+    if (mapCommand.type === "ship") {
+      if (navData) {
+        mapRef.current.setView([navData.latitude, navData.longitude], 21, {
+          animate: true,
+        });
+      }
+    } else if (mapCommand.type === "arena") {
+      const center = getCenter(mapState.view_type);
+      mapRef.current.setView(center, 21, { animate: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapCommand]);
+
   /** INIT MAP */
   useEffect(() => {
     if (mapRef.current) return;
@@ -445,7 +463,16 @@ export default function MapLeaflet({
       )
       .subscribe();
 
+    const resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    const mapElement = document.getElementById("map");
+    if (mapElement) {
+      resizeObserver.observe(mapElement);
+    }
+
     return () => {
+      resizeObserver.disconnect();
       supabase.removeChannel(buoyCh);
 
       // invalidate async lama
@@ -499,10 +526,7 @@ export default function MapLeaflet({
       mapRef.current.removeLayer(pathRef.current);
       pathRef.current = null;
     }
-    if (shipMarkerRef.current) {
-      mapRef.current.removeLayer(shipMarkerRef.current);
-      shipMarkerRef.current = null;
-    }
+    // We intentionally don't remove shipMarkerRef.current so the ship doesn't disappear
     trackRef.current = [];
 
     lockMapTotal(mapRef.current);
