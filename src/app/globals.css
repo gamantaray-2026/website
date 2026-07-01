@@ -1,26 +1,57 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #03161a;
+  --foreground: #d8e6dd;
+
+  --hijau-tua: #1a3a38;
+  --teal-gelap: #061e22;
+  --midnight-hitam: #01090b;
+  --sage-dingin: #6b8478;
+  --kapur-muda: #d8e6dd;
+  --lime-neon: #d9f21a;
+
+  --surface: rgba(6, 30, 34, 0.9);
+  --surface-strong: rgba(1, 9, 11, 0.96);
+  --border: rgba(107, 132, 120, 0.28);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-hijau-tua: var(--hijau-tua);
+  --color-teal-gelap: var(--teal-gelap);
+  --color-midnight-hitam: var(--midnight-hitam);
+  --color-sage-dingin: var(--sage-dingin);
+  --color-kapur-muda: var(--kapur-muda);
+  --color-lime-neon: var(--lime-neon);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-border: var(--border);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background:
+    radial-gradient(circle at top left, rgba(26, 58, 56, 0.8), transparent 32%),
+    radial-gradient(
+      circle at top right,
+      rgba(217, 242, 26, 0.12),
+      transparent 20%
+    ),
+    linear-gradient(
+      180deg,
+      var(--teal-gelap) 0%,
+      var(--background) 48%,
+      var(--midnight-hitam) 100%
+    );
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+::selection {
+  background: rgba(217, 242, 26, 0.25);
+  color: var(--kapur-muda);
 }
