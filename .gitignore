@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+*.BIN
+*.tlog
+*.tlog.raw
+logs/
+eeprom.bin

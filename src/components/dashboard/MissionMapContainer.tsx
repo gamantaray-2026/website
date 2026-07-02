@@ -406,6 +406,7 @@ export default function MissionMapContainer() {
           centerDraft={centerDraft}
           onCenterDraftChange={(lat, lng) => setCenterDraft([lat, lng])}
           onWaypointsChange={handleWaypointsChange}
+          mapCommand={null}
         />
       </div>
 

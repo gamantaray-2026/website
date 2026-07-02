@@ -145,7 +145,8 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
     const initRos = async () => {
       try {
         // Use dynamic import because roslib is an ES module
-        const ROSLIB = (await import("roslib")).default || await import("roslib");
+        const ROSLIBModule = await import("roslib");
+        const ROSLIB = (ROSLIBModule as any).default || ROSLIBModule;
         
         ros = new ROSLIB.Ros({
           url: "ws://localhost:9090",
