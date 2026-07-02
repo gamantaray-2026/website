@@ -13,10 +13,10 @@ type CameraFeed = {
 };
 
 const CAMERA_BASE_DATA = [
-  { title: "SL", label: "Surface Left" },
-  { title: "UL", label: "Upper Left" },
-  { title: "SR", label: "Surface Right" },
-  { title: "UR", label: "Upper Right" },
+  { title: "Surface Left", label: "Surface Left" },
+  { title: "Underwater Left", label: "Underwater Left" },
+  { title: "Surface Right", label: "Surface Right" },
+  { title: "Underwater Right", label: "Underwater Right" },
 ];
 
 function formatWIBTime(): string {
@@ -146,9 +146,10 @@ export function CameraFeedsPanel({
   }, []);
 
   const getImgUrl = (title: string) => {
-    // Handling fallback exactly like magang does
-    if (title === "SL") return imageMap["SL"] ?? imageMap["atas"];
-    if (title === "UL") return imageMap["UL"] ?? imageMap["bawah"];
+    if (title === "Surface Left") return imageMap["SL"] ?? imageMap["atas"];
+    if (title === "Underwater Left") return imageMap["UL"] ?? imageMap["bawah"];
+    if (title === "Surface Right") return imageMap["SR"] ?? imageMap["atas"];
+    if (title === "Underwater Right") return imageMap["UR"] ?? imageMap["bawah"];
     return imageMap[title];
   };
 
