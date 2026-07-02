@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera API Tester</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; padding: 20px; }
+        video, canvas { border: 2px solid #00ffcc; border-radius: 8px; margin-bottom: 20px; max-width: 100%; }
+        button { background: #00ffcc; color: black; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #00ccaa; }
+        .grid { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        #status { color: #00ffcc; font-family: monospace; padding: 10px; background: #000; border-radius: 5px; margin-top: 10px; min-height: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Gamantaray Camera API Tester</h2>
+    <video id="video" width="640" height="480" autoplay playsinline></video>
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+
+    <div class="grid">
+        <button onclick="takeSnapshot('SL')">Kirim ke Surface Left (SL)</button>
+        <button onclick="takeSnapshot('UL')">Kirim ke Underwater Left (UL)</button>
+        <button onclick="takeSnapshot('SR')">Kirim ke Surface Right (SR)</button>
+        <button onclick="takeSnapshot('UR')">Kirim ke Underwater Right (UR)</button>
+    </div>
+    <div class="grid">
+        <button onclick="testAllSlots()" style="background: #ffaa00;">Tembak ke 4 Kamera Sekaligus!</button>
+    </div>
+    
+    <div id="status">Menunggu kamera...</div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const status = document.getElementById('status');
+
+        // Request camera access
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                status.innerText = "Kamera laptop berhasil terhubung!";
+            })
+            .catch(err => {
+                console.error("Camera error:", err);
+                status.innerText = "Error kamera: " + err.message;
+            });
+
+        function uploadImage(blob, slotName) {
+            status.innerText = `Mengunggah foto ke slot ${slotName}...`;
+            const formData = new FormData();
+            formData.append('foto', blob, `camera_${slotName}.jpg`);
+            formData.append('slot', slotName);
+
+            return fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    status.innerText = `[SUCCESS] Slot ${slotName} terkirim! URL: ${data.url}`;
+                } else {
+                    status.innerText = `[ERROR] Slot ${slotName} gagal: ` + data.error;
+                }
+            })
+            .catch(err => {
+                status.innerText = `[ERROR] Network error slot ${slotName}: ` + err.message;
+            });
+        }
+
+        function takeSnapshot(slotName) {
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            return new Promise((resolve) => {
+                canvas.toBlob(blob => {
+                    uploadImage(blob, slotName).then(resolve);
+                }, 'image/jpeg', 0.8);
+            });
+        }
+
+        async function testAllSlots() {
+            const slots = ['SL', 'UL', 'SR', 'UR'];
+            for (const slot of slots) {
+                await takeSnapshot(slot);
+                // Wait 1 second between shots to give Supabase time to process
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            status.innerText += "\nSemua 4 kamera selesai ditembak!";
+        }
+    </script>
+</body>
+</html>

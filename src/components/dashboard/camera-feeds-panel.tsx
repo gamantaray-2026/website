@@ -134,11 +134,14 @@ export function CameraFeedsPanel({
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "image_mission" },
         (payload) => {
+          console.log("Realtime Payload Received:", payload);
           const row = payload.new as any;
           setImageMap((prev) => ({ ...prev, [row.image_slot_name]: row.image_url }));
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Supabase Realtime Status:", status);
+      });
 
     return () => {
       supabase.removeChannel(imgCh);
