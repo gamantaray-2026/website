@@ -156,26 +156,69 @@ export function CameraFeedsPanel({
     return imageMap[title];
   };
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImage, setModalImage] = useState("");
+
+  const handleImageClick = (imageUrl: string | undefined) => {
+    if (imageUrl) {
+      setModalImage(imageUrl);
+      setIsModalOpen(true);
+    }
+  };
+
   return (
-    <aside className="flex min-h-0 flex-col gap-0 border border-border bg-surface-strong shadow-[0_0_0_1px_var(--border)_inset]">
-      <div className="flex items-center gap-2.5 shrink-0 border-b border-border px-5 py-4 text-[1.05rem] text-kapur-muda font-medium tracking-wide">
-        <Video className="h-4 w-4 text-lime-neon" />
-        Camera Feeds
-      </div>
-      <div className="grid gap-px bg-foreground/10 overflow-y-auto">
-        {CAMERA_BASE_DATA.map((feed) => (
-          <CameraCard
-            key={feed.title}
-            title={feed.title}
-            label={feed.label}
-            code={currentTime}
-            imageUrl={getImgUrl(feed.title)}
-            refreshKey={refreshKey}
-            isSelected={feed.title === selectedFeedTitle}
-            onSelect={() => onFeedSelect(feed.title)}
-          />
-        ))}
-      </div>
-    </aside>
+    <>
+      <aside className="flex min-h-0 flex-col gap-0 border border-border bg-surface-strong shadow-[0_0_0_1px_var(--border)_inset]">
+        <div className="flex items-center gap-2.5 shrink-0 border-b border-border px-5 py-4 text-[1.05rem] text-kapur-muda font-medium tracking-wide">
+          <Video className="h-4 w-4 text-lime-neon" />
+          Camera Feeds
+        </div>
+        <div className="grid gap-px bg-foreground/10 overflow-y-auto">
+          {CAMERA_BASE_DATA.map((feed) => {
+            const imgUrl = getImgUrl(feed.title);
+            return (
+              <CameraCard
+                key={feed.title}
+                title={feed.title}
+                label={feed.label}
+                code={currentTime}
+                imageUrl={imgUrl}
+                refreshKey={refreshKey}
+                isSelected={feed.title === selectedFeedTitle}
+                onSelect={() => {
+                  onFeedSelect(feed.title);
+                  handleImageClick(imgUrl);
+                }}
+              />
+            );
+          })}
+        </div>
+      </aside>
+
+      {isModalOpen && modalImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm cursor-pointer p-4"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
+            <img 
+              src={`${modalImage}?t=${refreshKey}`} 
+              alt="Fullscreen Camera Feed" 
+              className="max-w-full max-h-[90vh] object-contain border-2 border-lime-neon rounded-lg shadow-2xl"
+            />
+            <button 
+              className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black p-2 rounded-full transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsModalOpen(false);
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
+
