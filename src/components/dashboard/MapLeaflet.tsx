@@ -122,6 +122,7 @@ export default function MapLeaflet({
   onCenterDraftChange,
   onWaypointsChange,
   mapCommand,
+  role = "viewer",
 }: {
   supabase: SupabaseClient;
 
@@ -138,6 +139,7 @@ export default function MapLeaflet({
 
   onWaypointsChange: (missionType: string, newWaypoints: Waypoints) => void;
   mapCommand: { id: number; type: "ship" | "arena" } | null;
+  role?: "admin" | "viewer";
 }) {
   const mapRef = useRef<L.Map | null>(null);
 
@@ -276,7 +278,7 @@ export default function MapLeaflet({
     const addDrag = (key: WaypointType, icon: L.Icon, label: string) => {
       const marker = L.marker(wp[key], {
         icon,
-        draggable: true,
+        draggable: role === "admin",
         autoPan: false,
         bubblingMouseEvents: false,
       } as any)
@@ -338,7 +340,7 @@ export default function MapLeaflet({
 
       const marker = L.marker([buoy.latitude, buoy.longitude], {
         icon,
-        draggable: true,
+        draggable: role === "admin",
         autoPan: false,
         bubblingMouseEvents: false,
       } as any)
@@ -482,7 +484,7 @@ export default function MapLeaflet({
       mapRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [role]);
 
   /** GANTI LINTASAN / CENTER */
   useEffect(() => {
@@ -515,7 +517,7 @@ export default function MapLeaflet({
     lockMapTotal(map);
     enforceHardLock(map);
     (map as any).setBearing?.(MAP_BEARING_DEG);
-  }, [missionWaypoints, mapState.view_type]);
+  }, [missionWaypoints, mapState.view_type, role]);
 
   /** refresh track */
   useEffect(() => {

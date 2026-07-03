@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Shield, Eye } from "lucide-react";
 
-export function DashboardHeader() {
+export function DashboardHeader({ role = "viewer", onRoleChange, hideToggle }: { role?: "admin" | "viewer", onRoleChange?: (r: "admin" | "viewer") => void, hideToggle?: boolean }) {
   const [timeStr, setTimeStr] = useState<string>("Memuat waktu...");
   const [isoStr, setIsoStr] = useState<string>("");
   const [isLightMode, setIsLightMode] = useState<boolean>(false);
@@ -86,6 +86,17 @@ export function DashboardHeader() {
           <Sun className={`absolute h-6 w-6 transition-all duration-500 ${isLightMode ? "rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100 group-hover:rotate-[360deg]"}`} />
           <Moon className={`absolute h-6 w-6 transition-all duration-500 ${isLightMode ? "rotate-0 scale-100 opacity-100 group-hover:-rotate-12" : "-rotate-90 scale-0 opacity-0"}`} />
         </button>
+
+        {!hideToggle && (
+          <button
+            onClick={() => onRoleChange?.(role === "admin" ? "viewer" : "admin")}
+            className="flex items-center gap-2 border border-border rounded-md px-3 py-1.5 text-sm font-medium text-kapur-muda hover:bg-foreground/5 transition-colors"
+            title="Toggle Role"
+          >
+            {role === "admin" ? <Shield className="w-4 h-4 text-lime-neon" /> : <Eye className="w-4 h-4 text-sage-dingin" />}
+            <span className="hidden sm:inline">{role === "admin" ? "Admin Mode" : "Viewer Mode"}</span>
+          </button>
+        )}
 
         <div className="flex flex-col items-end text-right">
           <time dateTime={isoStr} className="text-sm font-medium tracking-wider text-kapur-muda" suppressHydrationWarning>

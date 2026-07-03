@@ -1,5 +1,5 @@
 import { DashboardView } from "@/components/dashboard";
 
 export default function Home() {
-  return <DashboardView />;
+  return <DashboardView forceRole="viewer" />;
 }

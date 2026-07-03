@@ -12,6 +12,5 @@ export type MissionStep = {
 
 export type CameraFeed = {
   title: string;
-  code: string;
   label: string;
 };

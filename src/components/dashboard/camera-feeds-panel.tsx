@@ -7,7 +7,6 @@ import { Video } from "lucide-react";
 
 type CameraFeed = {
   title: string;
-  code: string;
   label: string;
   imageUrl?: string;
 };
@@ -18,18 +17,6 @@ const CAMERA_BASE_DATA = [
   { title: "Surface Right", label: "Surface Right" },
   { title: "Underwater Right", label: "Underwater Right" },
 ];
-
-function formatWIBTime(): string {
-  const now = new Date();
-  const formatter = new Intl.DateTimeFormat("id-ID", {
-    timeZone: "Asia/Jakarta",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  });
-  return formatter.format(now).replace(/\./g, ":");
-}
 
 function CameraCard({
   title,
@@ -62,7 +49,6 @@ function CameraCard({
         <span className="font-semibold tracking-[0.16em] text-kapur-muda/80 drop-shadow-md">
           {title}
         </span>
-        <span className="drop-shadow-md">{code}</span>
       </div>
       <div className="flex min-h-56 flex-col items-center justify-center gap-3 text-sage-dingin relative overflow-hidden bg-black/20 rounded-md">
         {imageUrl ? (
@@ -91,17 +77,8 @@ export function CameraFeedsPanel({
   selectedFeedTitle,
   onFeedSelect,
 }: CameraFeedsPanelProps) {
-  const [currentTime, setCurrentTime] = useState<string>("00:00:00");
   const [refreshKey, setRefreshKey] = useState<number>(Date.now());
   const [imageMap, setImageMap] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    setCurrentTime(formatWIBTime());
-    const interval = setInterval(() => {
-      setCurrentTime(formatWIBTime());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const imgInterval = setInterval(() => {
@@ -181,7 +158,6 @@ export function CameraFeedsPanel({
                 key={feed.title}
                 title={feed.title}
                 label={feed.label}
-                code={currentTime}
                 imageUrl={imgUrl}
                 refreshKey={refreshKey}
                 isSelected={feed.title === selectedFeedTitle}

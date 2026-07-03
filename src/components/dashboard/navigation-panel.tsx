@@ -21,11 +21,13 @@ type CogData = {
 type NavigationPanelProps = {
   activeStepId: string;
   onStepChange: (stepId: string) => void;
+  role?: "admin" | "viewer";
 };
 
 export function NavigationPanel({
   activeStepId,
   onStepChange,
+  role = "viewer",
 }: NavigationPanelProps) {
   const [navData, setNavData] = useState<NavData | null>(null);
   const [cogData, setCogData] = useState<CogData | null>(null);
@@ -137,8 +139,9 @@ export function NavigationPanel({
               >
                 <button
                   type="button"
+                  disabled={role === "viewer"}
                   onClick={() => onStepChange(step.id)}
-                  className="flex w-full items-center gap-3 text-left"
+                  className={`flex w-full items-center gap-3 text-left ${role === "viewer" ? "cursor-not-allowed opacity-60" : ""}`}
                 >
                   <span
                     className={`h-2.5 w-2.5 rounded-full ${

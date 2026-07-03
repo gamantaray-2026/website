@@ -34,9 +34,10 @@ function ensureWaypoints(wp: Partial<Waypoints> | undefined, center: [number, nu
 type MapPanelProps = {
   activeRoute: DashboardRoute;
   onRouteChange: (route: DashboardRoute) => void;
+  role?: "admin" | "viewer";
 };
 
-export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
+export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPanelProps) {
   const [navData, setNavData] = useState<NavData | null>(null);
   const [cogData, setCogData] = useState<CogData | null>(null);
   const [latestImages, setLatestImages] = useState<{ [key: string]: string }>({});
@@ -268,7 +269,7 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
         </div>
 
         <div className="flex gap-2 text-sm">
-          {!centerEditMode ? (
+          {role === "admin" && !centerEditMode ? (
             <button
               className="inline-flex items-center justify-center rounded-sm text-sm transition-colors border border-border text-kapur-muda/80 hover:bg-foreground/5 px-3 py-1.5 gap-2"
               onClick={startEditCenter}
@@ -276,7 +277,7 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
               <PenTool className="h-3 w-3" />
               <span className="hidden sm:inline">Set Origin</span>
             </button>
-          ) : (
+          ) : role === "admin" && centerEditMode ? (
             <div className="flex gap-2">
               <button
                 className="inline-flex items-center justify-center rounded-sm text-sm transition-colors bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 gap-2"
@@ -296,7 +297,7 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
                 <span>Cancel</span>
               </button>
             </div>
-          )}
+          ) : null}
 
           <div className="w-px h-6 bg-foreground/10 my-auto mx-2" />
 
@@ -339,6 +340,7 @@ export function MapPanel({ activeRoute, onRouteChange }: MapPanelProps) {
             onCenterDraftChange={(lat, lng) => setCenterDraft([lat, lng])}
             onWaypointsChange={handleWaypointsChange}
             mapCommand={mapCommand}
+            role={role}
           />
         </div>
         
