@@ -142,6 +142,8 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
     let ros: any = null;
     let gpsTopic: any = null;
     let headingTopic: any = null;
+    let sogTopic: any = null;
+    let cogTopic: any = null;
 
     const initRos = async () => {
       try {
@@ -194,6 +196,34 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
             timestamp: new Date().toISOString(),
           }));
         });
+
+        sogTopic = new ROSLIB.Topic({
+          ros: ros,
+          name: "/nav/sog_ms",
+          messageType: "std_msgs/Float32",
+        });
+
+        sogTopic.subscribe((message: any) => {
+          setNavData((prev: any) => ({
+            ...prev,
+            sog_ms: message.data,
+            timestamp: new Date().toISOString(),
+          }));
+        });
+
+        cogTopic = new ROSLIB.Topic({
+          ros: ros,
+          name: "/nav/cog_deg",
+          messageType: "std_msgs/Float32",
+        });
+
+        cogTopic.subscribe((message: any) => {
+          setCogData((prev: any) => ({
+            ...prev,
+            cog: message.data,
+            timestamp: new Date().toISOString(),
+          }));
+        });
       } catch (e) {
         console.warn("[ROS] Error initializing roslib:", e);
       }
@@ -204,6 +234,8 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
     return () => {
       if (gpsTopic) gpsTopic.unsubscribe();
       if (headingTopic) headingTopic.unsubscribe();
+      if (sogTopic) sogTopic.unsubscribe();
+      if (cogTopic) cogTopic.unsubscribe();
       if (ros) ros.close();
     };
   }, []);

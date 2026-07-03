@@ -18,6 +18,11 @@ type CogData = {
   timestamp: string;
 };
 
+type DataMission = {
+  image_atas: string;
+  image_bawah: string;
+};
+
 type NavigationPanelProps = {
   activeStepId: string;
   onStepChange: (stepId: string) => void;
@@ -74,6 +79,40 @@ export function NavigationPanel({
       supabase.removeChannel(cogCh);
     };
   }, []);
+
+  // Auto-advance mission step saat gazebo selesaikan misi
+  useEffect(() => {
+    const loadMissionStatus = async () => {
+      const { data } = await supabase
+        .from("data_mission")
+        .select("image_atas, image_bawah")
+        .eq("id", 1)
+        .limit(1);
+      if (data?.[0]) {
+        const m = data[0] as DataMission;
+        if (m.image_bawah === "selesai") onStepChange("05");
+        else if (m.image_atas === "selesai") onStepChange("04");
+      }
+    };
+    loadMissionStatus();
+
+    const missionCh = supabase
+      .channel("nav_panel_mission_changes")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "data_mission" },
+        (payload) => {
+          const m = payload.new as DataMission;
+          if (m.image_bawah === "selesai") onStepChange("05");
+          else if (m.image_atas === "selesai") onStepChange("04");
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(missionCh);
+    };
+  }, [onStepChange]);
 
   const formatCoord = (coord?: number) => {
     if (coord === undefined || coord === null) return "—";
