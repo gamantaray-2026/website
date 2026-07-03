@@ -20,7 +20,6 @@ const CAMERA_BASE_DATA = [
 
 function CameraCard({
   title,
-  code,
   label,
   isSelected,
   onSelect,
@@ -28,7 +27,6 @@ function CameraCard({
   refreshKey,
 }: {
   title: string;
-  code: string;
   label: string;
   isSelected: boolean;
   onSelect: () => void;
