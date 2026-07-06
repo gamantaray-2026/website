@@ -21,6 +21,7 @@ type CogData = {
 type DataMission = {
   image_atas: string;
   image_bawah: string;
+  docking: string;
 };
 
 type NavigationPanelProps = {
@@ -82,16 +83,24 @@ export function NavigationPanel({
 
   // Auto-advance mission step saat gazebo selesaikan misi
   useEffect(() => {
+    // Urutan pengecekan SENGAJA dari tahap paling akhir ke paling awal:
+    // begitu tahap yang lebih maju "selesai", tahap sebelumnya tidak perlu dicek lagi.
+    const resolveActiveStep = (m: DataMission): string | null => {
+      if (m.docking === "selesai") return "06";
+      if (m.image_bawah === "selesai") return "05";
+      if (m.image_atas === "selesai") return "04";
+      return null;
+    };
+
     const loadMissionStatus = async () => {
       const { data } = await supabase
         .from("data_mission")
-        .select("image_atas, image_bawah")
+        .select("image_atas, image_bawah, docking")
         .eq("id", 1)
         .limit(1);
       if (data?.[0]) {
-        const m = data[0] as DataMission;
-        if (m.image_bawah === "selesai") onStepChange("05");
-        else if (m.image_atas === "selesai") onStepChange("04");
+        const nextStep = resolveActiveStep(data[0] as DataMission);
+        if (nextStep) onStepChange(nextStep);
       }
     };
     loadMissionStatus();
@@ -102,9 +111,8 @@ export function NavigationPanel({
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "data_mission" },
         (payload) => {
-          const m = payload.new as DataMission;
-          if (m.image_bawah === "selesai") onStepChange("05");
-          else if (m.image_atas === "selesai") onStepChange("04");
+          const nextStep = resolveActiveStep(payload.new as DataMission);
+          if (nextStep) onStepChange(nextStep);
         }
       )
       .subscribe();
