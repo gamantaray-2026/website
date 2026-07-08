@@ -359,7 +359,7 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
               className="inline-flex items-center justify-center rounded-sm text-sm transition-colors border border-border text-kapur-muda/80 hover:bg-foreground/5 px-3 py-1.5 gap-2"
               onClick={startEditCenter}
             >
-              <PenTool className="h-3 w-3" />
+              <Target className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Set Origin</span>
             </button>
           ) : role === "admin" && centerEditMode ? (
