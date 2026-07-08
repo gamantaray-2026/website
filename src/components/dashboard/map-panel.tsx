@@ -346,14 +346,14 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
   const routeLabel = activeRoute === "A" ? "Lintasan A" : "Lintasan B";
 
   return (
-    <section className="flex min-w-0 flex-col border border-border bg-surface-strong shadow-[0_0_0_1px_var(--border)_inset]">
-      <div className="flex items-center justify-between border-b border-border px-5 py-4">
+    <section className="flex min-w-0 flex-1 flex-col h-full border border-border bg-surface-strong shadow-[0_0_0_1px_var(--border)_inset]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border px-4 sm:px-5 py-4 gap-3 sm:gap-0">
         <div className="flex items-center gap-2.5">
           <Map className="h-4 w-4 text-lime-neon" />
           <h2 className="text-[1.05rem] text-kapur-muda font-medium tracking-wide">Real-Time Map</h2>
         </div>
 
-        <div className="flex gap-2 text-sm">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
           {role === "admin" && !centerEditMode ? (
             <button
               className="inline-flex items-center justify-center rounded-sm text-sm transition-colors border border-border text-kapur-muda/80 hover:bg-foreground/5 px-3 py-1.5 gap-2"
