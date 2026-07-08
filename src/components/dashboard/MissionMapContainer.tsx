@@ -125,7 +125,7 @@ export default function MissionMapContainer() {
         .select('"Lintasan","Latitude","Longititude"');
       if (cData) {
         const next: Record<string, [number, number]> = { ...fallbackCenters };
-        cData.forEach((row: any) => {
+        cData.forEach((row: { Latitude?: number; Longititude?: number; Lintasan: string }) => {
           if (row.Latitude != null && row.Longititude != null)
             next[row.Lintasan] = [row.Latitude, row.Longititude];
         });
@@ -139,7 +139,7 @@ export default function MissionMapContainer() {
 
       if (wData) {
         const partial: Record<string, Partial<Waypoints>> = {};
-        for (const row of wData as any[]) {
+        for (const row of wData as { mission_name: string; waypoint_type: string; latitude: number; longitude: number }[]) {
           partial[row.mission_name] ??= {};
           partial[row.mission_name]![row.waypoint_type as WaypointType] = [
             row.latitude,
@@ -165,7 +165,7 @@ export default function MissionMapContainer() {
         .select("latitude, longitude, timestamp, sog_ms")
         .order("timestamp", { ascending: false })
         .limit(1);
-      setNavData((nav?.[0] ?? null) as any);
+      setNavData((nav?.[0] ?? null) as NavData | null);
 
       // cog latest
       const { data: cog } = await supabase
@@ -173,7 +173,7 @@ export default function MissionMapContainer() {
         .select("cog, timestamp")
         .order("timestamp", { ascending: false })
         .limit(1);
-      setCogData((cog?.[0] ?? null) as any);
+      setCogData((cog?.[0] ?? null) as CogData | null);
 
       // images
       const { data: imgData } = await supabase
@@ -184,7 +184,7 @@ export default function MissionMapContainer() {
 
       if (imgData) {
         const imgs: { [key: string]: string } = {};
-        imgData.forEach((row: any) => {
+        imgData.forEach((row: { image_url: string; image_slot_name: string }) => {
           // Only set if not already set (simple way to get latest unique)
           // or just rely on the order.
           // Better: fetch distinct on slot if possible, or just parse locally.
@@ -208,7 +208,7 @@ export default function MissionMapContainer() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "nav_data" },
         (payload) => {
-          setNavData(payload.new as any);
+          setNavData(payload.new as NavData);
         }
       )
       .subscribe();
@@ -219,7 +219,7 @@ export default function MissionMapContainer() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "cog_data" },
         (payload) => {
-          setCogData(payload.new as any);
+          setCogData(payload.new as CogData);
         }
       )
       .subscribe();
@@ -230,7 +230,7 @@ export default function MissionMapContainer() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "image_mission" },
         (payload) => {
-          const newRow = payload.new as any;
+          const newRow = payload.new as { image_url: string; image_slot_name: string };
           setLatestImages((prev) => ({
             ...prev,
             [newRow.image_slot_name]: newRow.image_url,
