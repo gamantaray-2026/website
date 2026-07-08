@@ -83,12 +83,10 @@ export function NavigationPanel({
 
   // Auto-advance mission step saat gazebo selesaikan misi
   useEffect(() => {
-    // Urutan pengecekan SENGAJA dari tahap paling akhir ke paling awal:
-    // begitu tahap yang lebih maju "selesai", tahap sebelumnya tidak perlu dicek lagi.
     const resolveActiveStep = (m: DataMission): string | null => {
       if (m.docking === "selesai") return "06";
-      if (m.image_bawah === "selesai") return "05";
-      if (m.image_atas === "selesai") return "04";
+      if (m.docking === "proses" || m.image_bawah === "selesai") return "05";
+      if (m.image_bawah === "proses" || m.image_atas === "selesai") return "04";
       return null;
     };
 

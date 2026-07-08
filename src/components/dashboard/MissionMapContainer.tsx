@@ -1,5 +1,9 @@
 "use client";
 
+// DEPRECATED: Gunakan MapPanel sebagai gantinya.
+// MissionMapContainer adalah duplikat tak terpakai, dipertahankan untuk referensi.
+// Lihat map-panel.tsx untuk implementasi aktif dengan ROS+Supabase dual source.
+
 import { supabase } from "@/lib/supabaseClient";
 import {
   Check,
@@ -265,25 +269,26 @@ export default function MissionMapContainer() {
     return () => clearInterval(interval);
   }, [navData]);
 
-  // drag waypoint -> upsert
+  // drag waypoint -> upsert only changed waypoint
   const handleWaypointsChange = async (
     missionType: string,
     newWaypoints: Waypoints
   ) => {
+    const oldWaypoints = missionWaypoints[missionType];
+    const changedType = waypointTypes.find((t) => {
+      if (!oldWaypoints) return true;
+      return oldWaypoints[t][0] !== newWaypoints[t][0] || oldWaypoints[t][1] !== newWaypoints[t][1];
+    });
     setMissionWaypoints((prev) => ({ ...prev, [missionType]: newWaypoints }));
 
-    const rows = waypointTypes.map((t) => ({
-      mission_name: missionType,
-      waypoint_type: t,
-      latitude: newWaypoints[t][0],
-      longitude: newWaypoints[t][1],
-    }));
-
-    const { error } = await supabase.from("mission_waypoints").upsert(rows, {
-      onConflict: "mission_name,waypoint_type",
-    });
-
-    if (error) console.error("Gagal upsert mission_waypoints:", error);
+    if (changedType) {
+      const { error } = await supabase.from("mission_waypoints").upsert(
+        { mission_name: missionType, waypoint_type: changedType,
+          latitude: newWaypoints[changedType][0], longitude: newWaypoints[changedType][1] },
+        { onConflict: "mission_name,waypoint_type" }
+      );
+      if (error) console.error("Gagal upsert mission_waypoints:", error);
+    }
   };
 
   const setLintasan = (m: MissionName) =>

@@ -3,7 +3,7 @@
 import { supabase } from "@/lib/supabaseClient";
 import { Check, PenTool, RefreshCw, X, Maximize, Minimize, Map, Navigation, Target } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CogData, MapState, NavData, Waypoints, WaypointType } from "./MapLeaflet";
 import type { DashboardRoute } from "./types";
 
@@ -42,6 +42,9 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
   const [cogData, setCogData] = useState<CogData | null>(null);
   const [latestImages, setLatestImages] = useState<{ [key: string]: string }>({});
   const [isSignalLost, setIsSignalLost] = useState(false);
+  const [rosConnected, setRosConnected] = useState(false);
+  const rosLastUpdateRef = useRef(0);
+  const ROS_STALE_MS = 5000;
 
   const [centers, setCenters] = useState<Record<string, [number, number]>>({ ...fallbackCenters });
   const [missionWaypoints, setMissionWaypoints] = useState<Record<string, Waypoints>>(() => {
@@ -127,8 +130,12 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
   }, []);
 
   useEffect(() => {
-    const navCh = supabase.channel("gps_logs_changes").on("postgres_changes", { event: "INSERT", schema: "public", table: "nav_data" }, (payload) => setNavData(payload.new as any)).subscribe();
-    const cogCh = supabase.channel("cog_data_changes").on("postgres_changes", { event: "INSERT", schema: "public", table: "cog_data" }, (payload) => setCogData(payload.new as any)).subscribe();
+    const navCh = supabase.channel("gps_logs_changes").on("postgres_changes", { event: "INSERT", schema: "public", table: "nav_data" }, (payload) => {
+      if (Date.now() - rosLastUpdateRef.current > ROS_STALE_MS) setNavData(payload.new as any);
+    }).subscribe();
+    const cogCh = supabase.channel("cog_data_changes").on("postgres_changes", { event: "INSERT", schema: "public", table: "cog_data" }, (payload) => {
+      if (Date.now() - rosLastUpdateRef.current > ROS_STALE_MS) setCogData(payload.new as any);
+    }).subscribe();
     const imgCh = supabase.channel("image_mission_changes").on("postgres_changes", { event: "INSERT", schema: "public", table: "image_mission" }, (payload) => {
       const newRow = payload.new as any;
       setLatestImages((prev) => ({ ...prev, [newRow.image_slot_name]: newRow.image_url }));
@@ -137,106 +144,144 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
     return () => { supabase.removeChannel(navCh); supabase.removeChannel(cogCh); supabase.removeChannel(imgCh); };
   }, []);
 
-  // ROS Integration via rosbridge_server
+  // ROS Integration via rosbridge_server with auto-reconnect
   useEffect(() => {
     let ros: any = null;
     let gpsTopic: any = null;
     let headingTopic: any = null;
     let sogTopic: any = null;
     let cogTopic: any = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let reconnectAttempts = 0;
+    let reconnectScheduled = false;
+    const MAX_RECONNECT_DELAY = 30000;
+    const MIN_RECONNECT_DELAY = 2000;
 
-    const initRos = async () => {
+    const scheduleReconnect = () => {
+      if (reconnectScheduled) return;
+      reconnectScheduled = true;
+      const delay = Math.min(MIN_RECONNECT_DELAY * Math.pow(2, reconnectAttempts), MAX_RECONNECT_DELAY);
+      reconnectAttempts++;
+      console.log(`[ROS] Reconnecting in ${delay}ms (attempt ${reconnectAttempts})...`);
+      reconnectTimer = setTimeout(() => {
+        reconnectScheduled = false;
+        initRos();
+      }, delay);
+    };
+
+    const cleanupTopics = () => {
+      if (gpsTopic) { try { gpsTopic.unsubscribe(); } catch {} }
+      if (headingTopic) { try { headingTopic.unsubscribe(); } catch {} }
+      if (sogTopic) { try { sogTopic.unsubscribe(); } catch {} }
+      if (cogTopic) { try { cogTopic.unsubscribe(); } catch {} }
+      gpsTopic = null;
+      headingTopic = null;
+      sogTopic = null;
+      cogTopic = null;
+    };
+
+    async function initRos() {
       try {
-        // Use dynamic import because roslib is an ES module
+        cleanupTopics();
+        if (ros) { try { ros.close(); } catch {} }
+
         const ROSLIBModule = await import("roslib");
         const ROSLIB = (ROSLIBModule as any).default || ROSLIBModule;
-        
-        ros = new ROSLIB.Ros({
-          url: "ws://localhost:9090",
-        });
+
+        ros = new ROSLIB.Ros({ url: "ws://localhost:9090" });
 
         ros.on("connection", () => {
           console.log("[ROS] Connected to rosbridge websocket server.");
+          setRosConnected(true);
+          reconnectAttempts = 0;
+          reconnectScheduled = false;
+
+          gpsTopic = new ROSLIB.Topic({
+            ros, name: "/mavros/global_position/global",
+            messageType: "sensor_msgs/NavSatFix",
+          });
+          gpsTopic.subscribe((message: any) => {
+            rosLastUpdateRef.current = Date.now();
+            setNavData((prev: any) => ({
+              ...prev,
+              latitude: message.latitude,
+              longitude: message.longitude,
+              timestamp: new Date().toISOString(),
+              sog_ms: prev?.sog_ms ?? 2.0,
+            }));
+          });
+
+          headingTopic = new ROSLIB.Topic({
+            ros, name: "/mavros/global_position/compass_hdg",
+            messageType: "std_msgs/Float64",
+          });
+          headingTopic.subscribe((message: any) => {
+            rosLastUpdateRef.current = Date.now();
+            setCogData((prev: any) => ({
+              ...prev,
+              cog: message.data,
+              timestamp: new Date().toISOString(),
+            }));
+          });
+
+          sogTopic = new ROSLIB.Topic({
+            ros, name: "/nav/sog_ms",
+            messageType: "std_msgs/Float32",
+          });
+          sogTopic.subscribe((message: any) => {
+            rosLastUpdateRef.current = Date.now();
+            setNavData((prev: any) => ({
+              ...prev,
+              sog_ms: message.data,
+              timestamp: new Date().toISOString(),
+            }));
+          });
+
+          cogTopic = new ROSLIB.Topic({
+            ros, name: "/nav/cog_deg",
+            messageType: "std_msgs/Float32",
+          });
+          cogTopic.subscribe((message: any) => {
+            rosLastUpdateRef.current = Date.now();
+            setCogData((prev: any) => ({
+              ...prev,
+              cog: message.data,
+              timestamp: new Date().toISOString(),
+            }));
+          });
         });
 
         ros.on("error", (error: any) => {
-          console.log("[ROS] Error connecting to websocket server: ", error);
+          if (reconnectAttempts === 0) {
+            console.warn("[ROS] rosbridge not reachable, will keep retrying...");
+          }
+          if (rosConnected) {
+            setRosConnected(false);
+            cleanupTopics();
+          }
+          scheduleReconnect();
         });
 
         ros.on("close", () => {
-          console.log("[ROS] Connection to websocket server closed.");
-        });
-
-        gpsTopic = new ROSLIB.Topic({
-          ros: ros,
-          name: "/mavros/global_position/global",
-          messageType: "sensor_msgs/NavSatFix",
-        });
-
-        gpsTopic.subscribe((message: any) => {
-          setNavData((prev: any) => ({
-            ...prev,
-            latitude: message.latitude,
-            longitude: message.longitude,
-            timestamp: new Date().toISOString(),
-            sog_ms: prev?.sog_ms ?? 2.0,
-          }));
-        });
-
-        headingTopic = new ROSLIB.Topic({
-          ros: ros,
-          name: "/mavros/global_position/compass_hdg",
-          messageType: "std_msgs/Float64",
-        });
-
-        headingTopic.subscribe((message: any) => {
-          setCogData((prev: any) => ({
-            ...prev,
-            cog: message.data,
-            timestamp: new Date().toISOString(),
-          }));
-        });
-
-        sogTopic = new ROSLIB.Topic({
-          ros: ros,
-          name: "/nav/sog_ms",
-          messageType: "std_msgs/Float32",
-        });
-
-        sogTopic.subscribe((message: any) => {
-          setNavData((prev: any) => ({
-            ...prev,
-            sog_ms: message.data,
-            timestamp: new Date().toISOString(),
-          }));
-        });
-
-        cogTopic = new ROSLIB.Topic({
-          ros: ros,
-          name: "/nav/cog_deg",
-          messageType: "std_msgs/Float32",
-        });
-
-        cogTopic.subscribe((message: any) => {
-          setCogData((prev: any) => ({
-            ...prev,
-            cog: message.data,
-            timestamp: new Date().toISOString(),
-          }));
+          console.log("[ROS] Connection closed.");
+          setRosConnected(false);
+          cleanupTopics();
+          scheduleReconnect();
         });
       } catch (e) {
-        console.warn("[ROS] Error initializing roslib:", e);
+        console.warn("[ROS] Init error:", e);
+        setRosConnected(false);
+        scheduleReconnect();
       }
-    };
+    }
 
     initRos();
 
     return () => {
-      if (gpsTopic) gpsTopic.unsubscribe();
-      if (headingTopic) headingTopic.unsubscribe();
-      if (sogTopic) sogTopic.unsubscribe();
-      if (cogTopic) cogTopic.unsubscribe();
-      if (ros) ros.close();
+      reconnectScheduled = false;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      cleanupTopics();
+      if (ros) { try { ros.close(); } catch {} }
     };
   }, []);
 
@@ -253,12 +298,20 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
   }, [navData]);
 
   const handleWaypointsChange = async (missionType: string, newWaypoints: Waypoints) => {
+    const oldWaypoints = missionWaypoints[missionType];
+    const changedType = waypointTypes.find((t) => {
+      if (!oldWaypoints) return true;
+      return oldWaypoints[t][0] !== newWaypoints[t][0] || oldWaypoints[t][1] !== newWaypoints[t][1];
+    });
     setMissionWaypoints((prev) => ({ ...prev, [missionType]: newWaypoints }));
-    const rows = waypointTypes.map((t) => ({
-      mission_name: missionType, waypoint_type: t, latitude: newWaypoints[t][0], longitude: newWaypoints[t][1],
-    }));
-    const { error } = await supabase.from("mission_waypoints").upsert(rows, { onConflict: "mission_name,waypoint_type" });
-    if (error) console.error("Gagal upsert mission_waypoints:", error);
+    if (changedType) {
+      const { error } = await supabase.from("mission_waypoints").upsert(
+        { mission_name: missionType, waypoint_type: changedType,
+          latitude: newWaypoints[changedType][0], longitude: newWaypoints[changedType][1] },
+        { onConflict: "mission_name,waypoint_type" }
+      );
+      if (error) console.error("Gagal upsert mission_waypoints:", error);
+    }
   };
 
   const refreshTrack = () => {

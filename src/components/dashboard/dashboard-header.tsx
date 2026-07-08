@@ -66,7 +66,8 @@ export function DashboardHeader({ role = "viewer", onRoleChange, hideToggle }: {
             alt="Safinah One"
             width={80}
             height={48}
-            className={`h-full w-full object-contain drop-shadow-[0_0_8px_rgba(217,242,26,0.3)] transition-all duration-500 ${isLightMode ? 'brightness-[0.25] sepia-[0.5] hue-rotate-[120deg]' : ''}`}
+            style={{ width: 'auto', height: 'auto' }}
+            className={`max-h-full max-w-full object-contain drop-shadow-[0_0_8px_rgba(217,242,26,0.3)] transition-all duration-500 ${isLightMode ? 'brightness-[0.25] sepia-[0.5] hue-rotate-[120deg]' : ''}`}
             priority
           />
         </div>
