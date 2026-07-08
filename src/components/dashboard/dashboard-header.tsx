@@ -78,7 +78,7 @@ export function DashboardHeader({ role = "viewer", onRoleChange, hideToggle }: {
         </div>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-2 sm:gap-6">
         <button
           onClick={toggleTheme}
           className="group relative flex h-10 w-10 items-center justify-center text-sage-dingin transition-all duration-500 hover:text-lime-neon focus:outline-none"

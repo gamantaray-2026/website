@@ -19,17 +19,23 @@ export function DashboardView({ forceRole }: { forceRole?: "admin" | "viewer" })
       <div className="mx-auto flex h-full min-h-screen max-w-[1920px] flex-col px-5 pb-5 pt-4 sm:px-6 lg:px-7 xl:min-h-0">
         <DashboardHeader role={role} onRoleChange={setRole} hideToggle={!!forceRole} />
 
-        <div className="grid flex-1 gap-5 pt-5 xl:min-h-0 xl:grid-cols-[340px_minmax(0,1fr)_340px]">
-          <NavigationPanel
-            activeStepId={activeMissionStepId}
-            onStepChange={setActiveMissionStepId}
-            role={role}
-          />
-          <MapPanel activeRoute={activeRoute} onRouteChange={setActiveRoute} role={role} />
-          <CameraFeedsPanel
-            selectedFeedTitle={selectedCameraFeed}
-            onFeedSelect={setSelectedCameraFeed}
-          />
+        <div className="flex flex-col xl:flex-row flex-1 gap-5 pt-5 xl:min-h-0">
+          <div className="order-2 xl:order-1 flex w-full xl:w-[340px] shrink-0 flex-col min-h-0">
+            <NavigationPanel
+              activeStepId={activeMissionStepId}
+              onStepChange={setActiveMissionStepId}
+              role={role}
+            />
+          </div>
+          <div className="order-1 xl:order-2 flex flex-1 flex-col min-h-[500px] xl:min-h-0">
+            <MapPanel activeRoute={activeRoute} onRouteChange={setActiveRoute} role={role} />
+          </div>
+          <div className="order-3 xl:order-3 flex w-full xl:w-[340px] shrink-0 flex-col min-h-0">
+            <CameraFeedsPanel
+              selectedFeedTitle={selectedCameraFeed}
+              onFeedSelect={setSelectedCameraFeed}
+            />
+          </div>
         </div>
 
         

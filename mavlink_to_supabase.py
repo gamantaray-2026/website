@@ -29,6 +29,8 @@ if not url or not key:
 
 supabase: Client = create_client(url, key)
 
+from rclpy.qos import qos_profile_sensor_data
+
 class MavrosToSupabaseNode(Node):
     def __init__(self):
         super().__init__('mavros_to_supabase')
@@ -47,12 +49,12 @@ class MavrosToSupabaseNode(Node):
             NavSatFix,
             '/mavros/global_position/global',
             self.gps_callback,
-            10)
+            qos_profile_sensor_data)
         self.heading_sub = self.create_subscription(
             Float64,
             '/mavros/global_position/compass_hdg',
             self.heading_callback,
-            10)
+            qos_profile_sensor_data)
 
     def heading_callback(self, msg):
         self.current_heading = msg.data
