@@ -45,14 +45,14 @@ export function NavigationPanel({
         .select("latitude, longitude, timestamp, sog_ms")
         .order("timestamp", { ascending: false })
         .limit(1);
-      setNavData((nav?.[0] ?? null) as any);
+      setNavData((nav?.[0] ?? null) as NavData | null);
 
       const { data: cog } = await supabase
         .from("cog_data")
         .select("cog, timestamp")
         .order("timestamp", { ascending: false })
         .limit(1);
-      setCogData((cog?.[0] ?? null) as any);
+      setCogData((cog?.[0] ?? null) as CogData | null);
     };
 
     loadData();
@@ -62,7 +62,7 @@ export function NavigationPanel({
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "nav_data" },
-        (payload) => setNavData(payload.new as any)
+        (payload) => setNavData(payload.new as NavData)
       )
       .subscribe();
 
@@ -71,7 +71,7 @@ export function NavigationPanel({
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "cog_data" },
-        (payload) => setCogData(payload.new as any)
+        (payload) => setCogData(payload.new as CogData)
       )
       .subscribe();
 

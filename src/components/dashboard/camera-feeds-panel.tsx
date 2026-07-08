@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { CameraIcon } from "./camera-icon";
@@ -75,8 +76,9 @@ export function CameraFeedsPanel({
   selectedFeedTitle,
   onFeedSelect,
 }: CameraFeedsPanelProps) {
-  const [refreshKey, setRefreshKey] = useState<number>(Date.now());
-  const [imageMap, setImageMap] = useState<Record<string, string>>({});
+  const [refreshKey, setRefreshKey] = useState<number>(() => Date.now());
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [imageMap, setImageMap] = useState<Record<string, any>>({});
 
   useEffect(() => {
     const imgInterval = setInterval(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabaseClient";
-import { Check, PenTool, RefreshCw, X, Maximize, Minimize, Map, Navigation, Target } from "lucide-react";
+import { Check, RefreshCw, X, Maximize, Minimize, Map, Navigation, Target } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CogData, MapState, NavData, Waypoints, WaypointType } from "./MapLeaflet";
@@ -82,6 +82,7 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
       });
       return updated;
     });
+     
   }, [centers]);
 
   useEffect(() => {
@@ -89,7 +90,7 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
       const { data: cData } = await supabase.from("Center_Lintasan").select("*");
       if (cData) {
         const next: Record<string, [number, number]> = { ...fallbackCenters };
-        cData.forEach((row: any) => {
+        cData.forEach((row: { Latitude?: number; Longititude?: number; Lintasan: string }) => {
           if (row.Latitude != null && row.Longititude != null) next[row.Lintasan] = [row.Latitude, row.Longititude];
         });
         setCenters(next);
@@ -98,7 +99,7 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
       const { data: wData } = await supabase.from("mission_waypoints").select("mission_name, waypoint_type, latitude, longitude");
       if (wData) {
         const partial: Record<string, Partial<Waypoints>> = {};
-        for (const row of wData as any[]) {
+        for (const row of wData as { mission_name: string; waypoint_type: string; latitude: number; longitude: number }[]) {
           partial[row.mission_name] ??= {};
           partial[row.mission_name]![row.waypoint_type as WaypointType] = [row.latitude, row.longitude];
         }
@@ -112,32 +113,33 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
       }
 
       const { data: nav } = await supabase.from("nav_data").select("latitude, longitude, timestamp, sog_ms").order("timestamp", { ascending: false }).limit(1);
-      setNavData((nav?.[0] ?? null) as any);
+      setNavData((nav?.[0] ?? null) as NavData | null);
 
       const { data: cog } = await supabase.from("cog_data").select("cog, timestamp").order("timestamp", { ascending: false }).limit(1);
-      setCogData((cog?.[0] ?? null) as any);
+      setCogData((cog?.[0] ?? null) as CogData | null);
 
       const { data: imgData } = await supabase.from("image_mission").select("image_url, image_slot_name").order("created_at", { ascending: false }).limit(10);
       if (imgData) {
         const imgs: { [key: string]: string } = {};
-        imgData.forEach((row: any) => {
+        imgData.forEach((row: { image_url: string; image_slot_name: string }) => {
           if (!imgs[row.image_slot_name]) imgs[row.image_slot_name] = row.image_url;
         });
         setLatestImages(imgs);
       }
     };
     loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     const navCh = supabase.channel("gps_logs_changes").on("postgres_changes", { event: "INSERT", schema: "public", table: "nav_data" }, (payload) => {
-      if (Date.now() - rosLastUpdateRef.current > ROS_STALE_MS) setNavData(payload.new as any);
+      if (Date.now() - rosLastUpdateRef.current > ROS_STALE_MS) setNavData(payload.new as NavData);
     }).subscribe();
     const cogCh = supabase.channel("cog_data_changes").on("postgres_changes", { event: "INSERT", schema: "public", table: "cog_data" }, (payload) => {
-      if (Date.now() - rosLastUpdateRef.current > ROS_STALE_MS) setCogData(payload.new as any);
+      if (Date.now() - rosLastUpdateRef.current > ROS_STALE_MS) setCogData(payload.new as CogData);
     }).subscribe();
     const imgCh = supabase.channel("image_mission_changes").on("postgres_changes", { event: "INSERT", schema: "public", table: "image_mission" }, (payload) => {
-      const newRow = payload.new as any;
+      const newRow = payload.new as { image_url: string; image_slot_name: string };
       setLatestImages((prev) => ({ ...prev, [newRow.image_slot_name]: newRow.image_url }));
     }).subscribe();
 
