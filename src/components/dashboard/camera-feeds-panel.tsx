@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { CameraIcon } from "./camera-icon";
 import { Video } from "lucide-react";
@@ -76,23 +76,17 @@ export function CameraFeedsPanel({
   selectedFeedTitle,
   onFeedSelect,
 }: CameraFeedsPanelProps) {
-  const [refreshKey, setRefreshKey] = useState<number>(() => Date.now());
+  const refreshKey = useRef<number>(Date.now());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [imageMap, setImageMap] = useState<Record<string, any>>({});
-
-  useEffect(() => {
-    const imgInterval = setInterval(() => {
-      setRefreshKey(Date.now());
-    }, 2000);
-    return () => clearInterval(imgInterval);
-  }, []);
 
   useEffect(() => {
     const loadImages = async () => {
       const { data, error } = await supabase
         .from("image_mission")
         .select("image_url, image_slot_name")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(10);
       if (!error && data) {
         const newMap: Record<string, string> = {};
         data.forEach((row: any) => {
@@ -159,7 +153,7 @@ export function CameraFeedsPanel({
                 title={feed.title}
                 label={feed.label}
                 imageUrl={imgUrl}
-                refreshKey={refreshKey}
+                refreshKey={refreshKey.current}
                 isSelected={feed.title === selectedFeedTitle}
                 onSelect={() => {
                   onFeedSelect(feed.title);
@@ -178,7 +172,7 @@ export function CameraFeedsPanel({
         >
           <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
             <img 
-              src={`${modalImage}?t=${refreshKey}`} 
+              src={`${modalImage}?t=${refreshKey.current}`} 
               alt="Fullscreen Camera Feed" 
               className="max-w-full max-h-[90vh] object-contain border-2 border-lime-neon rounded-lg shadow-2xl"
             />

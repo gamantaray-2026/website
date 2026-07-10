@@ -87,19 +87,25 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
 
   useEffect(() => {
     const loadAll = async () => {
-      const { data: cData } = await supabase.from("Center_Lintasan").select("*");
-      if (cData) {
+      const [cResult, wResult, navResult, cogResult, imgResult] = await Promise.all([
+        supabase.from("Center_Lintasan").select("*"),
+        supabase.from("mission_waypoints").select("mission_name, waypoint_type, latitude, longitude"),
+        supabase.from("nav_data").select("latitude, longitude, timestamp, sog_ms").order("timestamp", { ascending: false }).limit(1),
+        supabase.from("cog_data").select("cog, timestamp").order("timestamp", { ascending: false }).limit(1),
+        supabase.from("image_mission").select("image_url, image_slot_name").order("created_at", { ascending: false }).limit(10),
+      ]);
+
+      if (cResult.data) {
         const next: Record<string, [number, number]> = { ...fallbackCenters };
-        cData.forEach((row: { Latitude?: number; Longititude?: number; Lintasan: string }) => {
+        cResult.data.forEach((row: { Latitude?: number; Longititude?: number; Lintasan: string }) => {
           if (row.Latitude != null && row.Longititude != null) next[row.Lintasan] = [row.Latitude, row.Longititude];
         });
         setCenters(next);
       }
 
-      const { data: wData } = await supabase.from("mission_waypoints").select("mission_name, waypoint_type, latitude, longitude");
-      if (wData) {
+      if (wResult.data) {
         const partial: Record<string, Partial<Waypoints>> = {};
-        for (const row of wData as { mission_name: string; waypoint_type: string; latitude: number; longitude: number }[]) {
+        for (const row of wResult.data as { mission_name: string; waypoint_type: string; latitude: number; longitude: number }[]) {
           partial[row.mission_name] ??= {};
           partial[row.mission_name]![row.waypoint_type as WaypointType] = [row.latitude, row.longitude];
         }
@@ -112,16 +118,12 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
         setMissionWaypoints(nextWp);
       }
 
-      const { data: nav } = await supabase.from("nav_data").select("latitude, longitude, timestamp, sog_ms").order("timestamp", { ascending: false }).limit(1);
-      setNavData((nav?.[0] ?? null) as NavData | null);
+      setNavData((navResult.data?.[0] ?? null) as NavData | null);
+      setCogData((cogResult.data?.[0] ?? null) as CogData | null);
 
-      const { data: cog } = await supabase.from("cog_data").select("cog, timestamp").order("timestamp", { ascending: false }).limit(1);
-      setCogData((cog?.[0] ?? null) as CogData | null);
-
-      const { data: imgData } = await supabase.from("image_mission").select("image_url, image_slot_name").order("created_at", { ascending: false }).limit(10);
-      if (imgData) {
+      if (imgResult.data) {
         const imgs: { [key: string]: string } = {};
-        imgData.forEach((row: { image_url: string; image_slot_name: string }) => {
+        imgResult.data.forEach((row: { image_url: string; image_slot_name: string }) => {
           if (!imgs[row.image_slot_name]) imgs[row.image_slot_name] = row.image_url;
         });
         setLatestImages(imgs);

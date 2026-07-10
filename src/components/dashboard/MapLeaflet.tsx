@@ -10,7 +10,6 @@ import { useEffect, useRef } from "react";
 export type NavData = {
   latitude: number;
   longitude: number;
-  sog?: number;
   sog_ms?: number;
   timestamp?: string;
 };

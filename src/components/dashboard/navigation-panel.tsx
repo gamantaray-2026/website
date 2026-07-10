@@ -8,8 +8,7 @@ import { Compass, ListChecks } from "lucide-react";
 type NavData = {
   latitude: number;
   longitude: number;
-  sog: number;
-  sog_ms?: number;
+  sog_ms: number;
   timestamp: string;
 };
 
@@ -125,8 +124,7 @@ export function NavigationPanel({
     return `${coord.toFixed(4)}°`;
   };
 
-  const speed = navData?.sog ?? (navData?.sog_ms ? navData.sog_ms * 1.94384 : 0);
-  const formattedSpeed = navData ? speed.toFixed(1) : "—";
+  const formattedSpeed = navData?.sog_ms != null ? (navData.sog_ms * 1.94384).toFixed(1) : "—";
   const formattedCog = (cogData?.cog !== undefined && cogData?.cog !== null) 
     ? cogData.cog.toFixed(0).padStart(3, "0") + "°" 
     : "—";
