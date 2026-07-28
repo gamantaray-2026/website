@@ -120,10 +120,14 @@ export function CameraFeedsPanel({
   }, []);
 
   const getImgUrl = (title: string) => {
-    if (title === "Surface Left") return imageMap["SL"] ?? imageMap["atas"];
-    if (title === "Underwater Left") return imageMap["UL"] ?? imageMap["bawah"];
-    if (title === "Surface Right") return imageMap["SR"] ?? imageMap["atas"];
-    if (title === "Underwater Right") return imageMap["UR"] ?? imageMap["bawah"];
+    if (title === "Surface Left")
+      return imageMap["SL"] ?? imageMap["atas_kiri"] ?? imageMap["atas"];
+    if (title === "Underwater Left")
+      return imageMap["UL"] ?? imageMap["bawah_kiri"] ?? imageMap["bawah"];
+    if (title === "Surface Right")
+      return imageMap["SR"] ?? imageMap["atas_kanan"] ?? imageMap["atas"];
+    if (title === "Underwater Right")
+      return imageMap["UR"] ?? imageMap["bawah_kanan"] ?? imageMap["bawah"];
     return imageMap[title];
   };
 

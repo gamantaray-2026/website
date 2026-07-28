@@ -21,6 +21,14 @@ type DataMission = {
   image_atas: string;
   image_bawah: string;
   docking: string;
+  floating_ball_set: string;
+  finish: string;
+  start: string;
+  preparation: string;
+  surface_imaging: string;
+  underwater_imaging: string;
+  delay_point: string;
+  loiter_time: string;
 };
 
 type NavigationPanelProps = {
@@ -83,16 +91,20 @@ export function NavigationPanel({
   // Auto-advance mission step saat gazebo selesaikan misi
   useEffect(() => {
     const resolveActiveStep = (m: DataMission): string | null => {
-      if (m.docking === "selesai") return "06";
-      if (m.docking === "proses" || m.image_bawah === "selesai") return "05";
-      if (m.image_bawah === "proses" || m.image_atas === "selesai") return "04";
+      if (m.finish === "selesai") return "07";
+      if (m.docking === "proses" || m.docking === "selesai") return "06";
+      if (m.surface_imaging === "proses" || m.surface_imaging === "selesai") return "05";
+      if (m.underwater_imaging === "proses" || m.underwater_imaging === "selesai") return "04";
+      if (m.floating_ball_set === "proses" || m.floating_ball_set === "selesai") return "03";
+      if (m.start === "proses" || m.start === "selesai") return "02";
+      if (m.preparation === "proses" || m.preparation === "selesai") return "01";
       return null;
     };
 
     const loadMissionStatus = async () => {
       const { data } = await supabase
         .from("data_mission")
-        .select("image_atas, image_bawah, docking")
+        .select("preparation, start, floating_ball_set, underwater_imaging, surface_imaging, docking, finish")
         .eq("id", 1)
         .limit(1);
       if (data?.[0]) {
