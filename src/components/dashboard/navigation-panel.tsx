@@ -45,6 +45,20 @@ export function NavigationPanel({
   const [navData, setNavData] = useState<NavData | null>(null);
   const [cogData, setCogData] = useState<CogData | null>(null);
 
+  // Helper to validate nav data
+  const isValidNavData = (data: any): data is NavData => {
+    return data &&
+      typeof data.latitude === 'number' &&
+      typeof data.longitude === 'number' &&
+      !isNaN(data.latitude) &&
+      !isNaN(data.longitude);
+  };
+
+  // Helper to validate cog data
+  const isValidCogData = (data: any): data is CogData => {
+    return data && typeof data.cog === 'number' && !isNaN(data.cog);
+  };
+
   useEffect(() => {
     const loadData = async () => {
       const { data: nav } = await supabase
@@ -52,14 +66,18 @@ export function NavigationPanel({
         .select("latitude, longitude, timestamp, sog_ms")
         .order("timestamp", { ascending: false })
         .limit(1);
-      setNavData((nav?.[0] ?? null) as NavData | null);
+      if (nav?.[0] && isValidNavData(nav[0])) {
+        setNavData(nav[0] as NavData);
+      }
 
       const { data: cog } = await supabase
         .from("cog_data")
         .select("cog, timestamp")
         .order("timestamp", { ascending: false })
         .limit(1);
-      setCogData((cog?.[0] ?? null) as CogData | null);
+      if (cog?.[0] && isValidCogData(cog[0])) {
+        setCogData(cog[0] as CogData);
+      }
     };
 
     loadData();
@@ -69,7 +87,9 @@ export function NavigationPanel({
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "nav_data" },
-        (payload) => setNavData(payload.new as NavData)
+        (payload) => {
+          if (isValidNavData(payload.new)) setNavData(payload.new as NavData);
+        }
       )
       .subscribe();
 
@@ -78,7 +98,9 @@ export function NavigationPanel({
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "cog_data" },
-        (payload) => setCogData(payload.new as CogData)
+        (payload) => {
+          if (isValidCogData(payload.new)) setCogData(payload.new as CogData);
+        }
       )
       .subscribe();
 
@@ -136,7 +158,7 @@ export function NavigationPanel({
     return `${coord.toFixed(4)}°`;
   };
 
-  const formattedSpeed = navData?.sog_ms != null ? (navData.sog_ms * 1.94384).toFixed(1) : "—";
+  const formattedSpeed = navData?.sog_ms != null ? navData.sog_ms.toFixed(1) : "—";
   const formattedCog = (cogData?.cog !== undefined && cogData?.cog !== null) 
     ? cogData.cog.toFixed(0).padStart(3, "0") + "°" 
     : "—";
@@ -176,7 +198,7 @@ export function NavigationPanel({
             Mission Log
           </h2>
           <span className="text-sm font-semibold text-sage-dingin">
-            Tahap 1
+            Tahap {activeStepId}
           </span>
         </div>
         <ul className="divide-y divide-border overflow-y-auto">

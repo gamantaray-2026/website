@@ -53,6 +53,29 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
     return init;
   });
 
+  // Validation helpers
+  const isValidNavData = (data: any): data is NavData => {
+    return data &&
+      typeof data.latitude === 'number' &&
+      typeof data.longitude === 'number' &&
+      !isNaN(data.latitude) &&
+      !isNaN(data.longitude) &&
+      data.latitude !== 0 &&
+      data.longitude !== 0;
+  };
+
+  const isValidCogData = (data: any): data is CogData => {
+    return data && typeof data.cog === 'number' && !isNaN(data.cog);
+  };
+
+  const isValidNavUpdate = (data: any): boolean => {
+    return data &&
+      (typeof data.latitude === 'number' && !isNaN(data.latitude)) &&
+      (typeof data.longitude === 'number' && !isNaN(data.longitude)) &&
+      data.latitude !== 0 &&
+      data.longitude !== 0;
+  };
+
   const viewType: MissionName = activeRoute === "A" ? "lintasan1" : "lintasan2";
   const [mapState, setMapState] = useState<MapState>({ view_type: viewType, is_refreshed: false });
 
@@ -121,7 +144,7 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
       setNavData((navResult.data?.[0] ?? null) as NavData | null);
       setCogData((cogResult.data?.[0] ?? null) as CogData | null);
 
-      if (imgResult.data) {
+if (imgResult.data) {
         const imgs: { [key: string]: string } = {};
         imgResult.data.forEach((row: { image_url: string; image_slot_name: string }) => {
           if (!imgs[row.image_slot_name]) imgs[row.image_slot_name] = row.image_url;
@@ -133,12 +156,12 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
     const navCh = supabase.channel("gps_logs_changes").on("postgres_changes", { event: "INSERT", schema: "public", table: "nav_data" }, (payload) => {
-      if (Date.now() - rosLastUpdateRef.current > ROS_STALE_MS) setNavData(payload.new as NavData);
+      if (isValidNavUpdate(payload.new)) setNavData(payload.new as NavData);
     }).subscribe();
     const cogCh = supabase.channel("cog_data_changes").on("postgres_changes", { event: "INSERT", schema: "public", table: "cog_data" }, (payload) => {
-      if (Date.now() - rosLastUpdateRef.current > ROS_STALE_MS) setCogData(payload.new as CogData);
+      if (isValidCogData(payload.new)) setCogData(payload.new as CogData);
     }).subscribe();
     const imgCh = supabase.channel("image_mission_changes").on("postgres_changes", { event: "INSERT", schema: "public", table: "image_mission" }, (payload) => {
       const newRow = payload.new as { image_url: string; image_slot_name: string };
@@ -205,14 +228,19 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
             messageType: "sensor_msgs/NavSatFix",
           });
           gpsTopic.subscribe((message: any) => {
-            rosLastUpdateRef.current = Date.now();
-            setNavData((prev: any) => ({
-              ...prev,
-              latitude: message.latitude,
-              longitude: message.longitude,
-              timestamp: new Date().toISOString(),
-              sog_ms: prev?.sog_ms ?? 2.0,
-            }));
+            // Validate GPS data before setting
+            if (typeof message.latitude === 'number' && 
+                typeof message.longitude === 'number' &&
+                !isNaN(message.latitude) && !isNaN(message.longitude) &&
+                message.latitude !== 0 && message.longitude !== 0) {
+              rosLastUpdateRef.current = Date.now();
+              setNavData((prev: any) => ({
+                ...prev,
+                latitude: message.latitude,
+                longitude: message.longitude,
+                timestamp: new Date().toISOString(),
+              }));
+            }
           });
 
           headingTopic = new ROSLIB.Topic({
@@ -220,12 +248,14 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
             messageType: "std_msgs/Float64",
           });
           headingTopic.subscribe((message: any) => {
-            rosLastUpdateRef.current = Date.now();
-            setCogData((prev: any) => ({
-              ...prev,
-              cog: message.data,
-              timestamp: new Date().toISOString(),
-            }));
+            if (typeof message.data === 'number' && !isNaN(message.data)) {
+              rosLastUpdateRef.current = Date.now();
+              setCogData((prev: any) => ({
+                ...prev,
+                cog: message.data,
+                timestamp: new Date().toISOString(),
+              }));
+            }
           });
 
           sogTopic = new ROSLIB.Topic({
@@ -233,12 +263,14 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
             messageType: "std_msgs/Float32",
           });
           sogTopic.subscribe((message: any) => {
-            rosLastUpdateRef.current = Date.now();
-            setNavData((prev: any) => ({
-              ...prev,
-              sog_ms: message.data,
-              timestamp: new Date().toISOString(),
-            }));
+            if (typeof message.data === 'number' && !isNaN(message.data)) {
+              rosLastUpdateRef.current = Date.now();
+              setNavData((prev: any) => ({
+                ...prev,
+                sog_ms: message.data,
+                timestamp: new Date().toISOString(),
+              }));
+            }
           });
 
           cogTopic = new ROSLIB.Topic({
@@ -246,12 +278,14 @@ export function MapPanel({ activeRoute, onRouteChange, role = "viewer" }: MapPan
             messageType: "std_msgs/Float32",
           });
           cogTopic.subscribe((message: any) => {
-            rosLastUpdateRef.current = Date.now();
-            setCogData((prev: any) => ({
-              ...prev,
-              cog: message.data,
-              timestamp: new Date().toISOString(),
-            }));
+            if (typeof message.data === 'number' && !isNaN(message.data)) {
+              rosLastUpdateRef.current = Date.now();
+              setCogData((prev: any) => ({
+                ...prev,
+                cog: message.data,
+                timestamp: new Date().toISOString(),
+              }));
+            }
           });
         });
 

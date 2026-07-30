@@ -154,6 +154,8 @@ export default function MapLeaflet({
   const shipMarkerRef = useRef<L.Marker | null>(null);
   const pathRef = useRef<L.Polyline | null>(null);
   const trackRef = useRef<[number, number][]>([]);
+  const shipLastUpdateRef = useRef(0);
+  const SHIP_UPDATE_INTERVAL_MS = 1200;
 
   // layers
   const waypointLayerRef = useRef<LayerGroup>(L.layerGroup());
@@ -534,12 +536,35 @@ export default function MapLeaflet({
     enforceHardLock(mapRef.current);
   }, [mapState.is_refreshed]);
 
+  const MIN_TRACK_DISTANCE_M = 1.0;
+
+  function metersBetween(a: [number, number], b: [number, number]): number {
+    const metersPerDegLat = 111320;
+    const metersPerDegLon = 111320 * Math.cos((a[0] * Math.PI) / 180);
+    const dLat = (a[0] - b[0]) * metersPerDegLat;
+    const dLon = (a[1] - b[1]) * metersPerDegLon;
+    return Math.sqrt(dLat * dLat + dLon * dLon);
+  }
+
   /** NAV TRACK */
   useEffect(() => {
     if (!mapRef.current || !navData) return;
 
+    // Check for valid coordinates
+    if (navData.latitude == null || navData.longitude == null) return;
+
     const map = mapRef.current;
     const pos: [number, number] = [navData.latitude, navData.longitude];
+
+    const now = Date.now();
+    if ((now - shipLastUpdateRef.current) < SHIP_UPDATE_INTERVAL_MS) return;
+    shipLastUpdateRef.current = now;
+
+    const lastTrackPos = trackRef.current[trackRef.current.length - 1];
+    if (lastTrackPos && metersBetween(pos, lastTrackPos) < MIN_TRACK_DISTANCE_M) {
+      shipMarkerRef.current?.setLatLng(pos);
+      return;
+    }
 
     if (!shipMarkerRef.current) {
       shipMarkerRef.current = L.marker(pos, {
@@ -554,8 +579,8 @@ export default function MapLeaflet({
       if (!pathRef.current) {
         pathRef.current = L.polyline(trackRef.current, {
           color: "red",
-          weight: 1,
-          dashArray: "2,2",
+          weight: 0.5,
+          opacity: 0.4,
         }).addTo(map);
       } else {
         pathRef.current.setLatLngs(trackRef.current);
