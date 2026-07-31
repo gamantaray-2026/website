@@ -136,7 +136,7 @@ export function NavigationPanel({
     return `${coord.toFixed(4)}°`;
   };
 
-  const formattedSpeed = navData?.sog_ms != null ? (navData.sog_ms * 1.94384).toFixed(1) : "—";
+  const formattedSpeed = navData?.sog_ms != null ? `${navData.sog_ms.toFixed(1)} m/s` : "—";
   const formattedCog = (cogData?.cog !== undefined && cogData?.cog !== null) 
     ? cogData.cog.toFixed(0).padStart(3, "0") + "°" 
     : "—";
