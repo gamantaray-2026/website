@@ -1,0 +1,203 @@
+"use client";
+
+/* eslint-disable @next/next/no-img-element */
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { CameraIcon } from "./camera-icon";
+import { Video } from "lucide-react";
+
+type CameraFeed = {
+  title: string;
+  label: string;
+  imageUrl?: string;
+};
+
+function CameraCard({
+  title,
+  label,
+  isSelected,
+  onSelect,
+  imageUrl,
+  refreshKey,
+}: {
+  title: string;
+  label: string;
+  isSelected: boolean;
+  onSelect: () => void;
+  imageUrl?: string;
+  refreshKey: number;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`border px-4 py-3 text-left shadow-[0_0_0_1px_rgba(26,58,56,0.45)_inset] transition-colors ${
+        isSelected
+          ? "border-lime-neon bg-surface"
+          : "border-border bg-surface hover:bg-foreground/5"
+      }`}
+    >
+      <div className="mb-8 flex items-center justify-between text-sm text-sage-dingin relative z-10">
+        <span className="font-semibold tracking-[0.16em] text-kapur-muda/80 drop-shadow-md">
+          {title}
+        </span>
+      </div>
+      <div className="flex min-h-56 flex-col items-center justify-center gap-3 text-sage-dingin relative overflow-hidden bg-black/20 rounded-md">
+        {imageUrl ? (
+          <img
+            src={`${imageUrl}?t=${refreshKey}`}
+            alt={label}
+            className="absolute inset-0 h-full w-full object-cover opacity-90"
+          />
+        ) : (
+          <>
+            <CameraIcon className="h-16 w-16 text-sage-dingin/80" />
+            <span className="text-sm uppercase tracking-[0.24em]">{label}</span>
+          </>
+        )}
+      </div>
+    </button>
+  );
+}
+
+import type { DashboardRoute } from "./types";
+
+type CameraFeedsPanelProps = {
+  selectedFeedTitle: string;
+  onFeedSelect: (title: string) => void;
+  activeRoute?: DashboardRoute;
+};
+
+export function CameraFeedsPanel({
+  selectedFeedTitle,
+  onFeedSelect,
+  activeRoute = "A",
+}: CameraFeedsPanelProps) {
+  const refreshKey = useRef<number>(Date.now());
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [imageMap, setImageMap] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    const loadImages = async () => {
+      const { data, error } = await supabase
+        .from("image_mission")
+        .select("image_url, image_slot_name")
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (!error && data) {
+        const newMap: Record<string, string> = {};
+        data.forEach((row: any) => {
+          if (!newMap[row.image_slot_name]) {
+            newMap[row.image_slot_name] = row.image_url;
+          }
+        });
+        setImageMap(newMap);
+      }
+    };
+    loadImages();
+
+    const imgCh = supabase
+      .channel("image_mission_feeds")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "image_mission" },
+        (payload) => {
+          console.log("Realtime Payload Received:", payload);
+          const row = payload.new as any;
+          setImageMap((prev) => ({ ...prev, [row.image_slot_name]: row.image_url }));
+        }
+      )
+      .subscribe((status) => {
+        console.log("Supabase Realtime Status:", status);
+      });
+
+    return () => {
+      supabase.removeChannel(imgCh);
+    };
+  }, []);
+
+  const CAMERA_BASE_DATA = activeRoute === "A" 
+    ? [
+        { title: "Kamera Kiri", label: "Kamera Bawah", slotKey: "bawah" },
+        { title: "Kamera Kanan", label: "Kamera Atas", slotKey: "atas" },
+      ]
+    : [
+        { title: "Kamera Kiri", label: "Kamera Atas", slotKey: "atas" },
+        { title: "Kamera Kanan", label: "Kamera Bawah", slotKey: "bawah" },
+      ];
+
+  const getImgUrl = (slotKey: string) => {
+    if (slotKey === "atas") {
+       return imageMap["atas"] ?? imageMap["SL"] ?? imageMap["SR"];
+    }
+    if (slotKey === "bawah") {
+       return imageMap["bawah"] ?? imageMap["UL"] ?? imageMap["UR"];
+    }
+    return imageMap[slotKey];
+  };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImage, setModalImage] = useState("");
+
+  const handleImageClick = (imageUrl: string | undefined) => {
+    if (imageUrl) {
+      setModalImage(imageUrl);
+      setIsModalOpen(true);
+    }
+  };
+
+  return (
+    <>
+      <aside className="flex min-h-0 flex-col gap-0 border border-border bg-surface-strong shadow-[0_0_0_1px_var(--border)_inset]">
+        <div className="flex items-center gap-2.5 shrink-0 border-b border-border px-5 py-4 text-[1.05rem] text-kapur-muda font-medium tracking-wide">
+          <Video className="h-4 w-4 text-lime-neon" />
+          Camera Feeds (Lintasan {activeRoute})
+        </div>
+        <div className="grid gap-px bg-foreground/10 overflow-y-auto">
+          {CAMERA_BASE_DATA.map((feed) => {
+            const imgUrl = getImgUrl(feed.slotKey);
+            return (
+              <CameraCard
+                key={feed.title}
+                title={feed.title}
+                label={feed.label}
+                imageUrl={imgUrl}
+                refreshKey={refreshKey.current}
+                isSelected={feed.title === selectedFeedTitle}
+                onSelect={() => {
+                  onFeedSelect(feed.title);
+                  handleImageClick(imgUrl);
+                }}
+              />
+            );
+          })}
+        </div>
+      </aside>
+
+      {isModalOpen && modalImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm cursor-pointer p-4"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
+            <img 
+              src={`${modalImage}?t=${refreshKey.current}`} 
+              alt="Fullscreen Camera Feed" 
+              className="max-w-full max-h-[90vh] object-contain border-2 border-lime-neon rounded-lg shadow-2xl"
+            />
+            <button 
+              className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black p-2 rounded-full transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsModalOpen(false);
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+

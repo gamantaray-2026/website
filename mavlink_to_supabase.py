@@ -2,7 +2,7 @@ import os
 import time
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import NavSatFix
+from sensor_msgs.msg import NavSatFix, BatteryState
 from std_msgs.msg import Float64
 from supabase import create_client, Client
 
@@ -55,6 +55,12 @@ class MavrosToSupabaseNode(Node):
             '/mavros/global_position/compass_hdg',
             self.heading_callback,
             qos_profile_sensor_data)
+            
+        self.battery_sub = self.create_subscription(
+            BatteryState,
+            '/mavros/battery',
+            self.battery_callback,
+            qos_profile_sensor_data)
 
     def heading_callback(self, msg):
         self.current_heading = msg.data
@@ -66,22 +72,31 @@ class MavrosToSupabaseNode(Node):
         now = time.time()
         if now - self.last_update >= self.update_interval:
             try:
-                # Insert Nav Data
+                # Insert Nav Data (Posisi)
                 supabase.table("nav_data").insert({
                     "latitude": self.current_lat,
                     "longitude": self.current_lon,
-                    "sog_ms": 2.0
+                    "sog_ms": 0.0 # Nanti bisa diisi dari /mavros/local_position/velocity_local
                 }).execute()
                 
-                # Insert Heading (COG)
+                # Insert Heading (Arah)
                 supabase.table("cog_data").insert({
                     "cog": self.current_heading
                 }).execute()
+                
+                # Insert Baterai (Opsional jika Anda mau menambahkan tabel battery_data)
+                if hasattr(self, 'current_battery_voltage'):
+                    # supabase.table("battery_data").insert({"voltage": self.current_battery_voltage, "percentage": self.current_battery_pct}).execute()
+                    pass
                 
                 self.get_logger().info(f"[Supabase Sync] Terkirim! Lat: {self.current_lat:.6f}, Lon: {self.current_lon:.6f}, Hdg: {self.current_heading:.1f}")
                 self.last_update = now
             except Exception as e:
                 self.get_logger().error(f"Error ke Supabase: {e}")
+
+    def battery_callback(self, msg):
+        self.current_battery_voltage = msg.voltage
+        self.current_battery_pct = msg.percentage * 100.0  # diubah ke persen
 
 def main(args=None):
     rclpy.init(args=args)

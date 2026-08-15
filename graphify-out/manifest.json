@@ -1,0 +1,347 @@
+{
+  ".claude/settings.json": {
+    "mtime": 1785397017.5277514,
+    "ast_hash": "6a46510e6fbdfb417d355157f0459251",
+    "semantic_hash": "6a46510e6fbdfb417d355157f0459251"
+  },
+  "check_db.js": {
+    "mtime": 1785396041.049803,
+    "ast_hash": "f323ecf48667566b93167a3b6efc8f5f",
+    "semantic_hash": "f323ecf48667566b93167a3b6efc8f5f"
+  },
+  "eslint.config.mjs": {
+    "mtime": 1785396041.049803,
+    "ast_hash": "dfa1f5f6a7037bf39dc510f30b180002",
+    "semantic_hash": "dfa1f5f6a7037bf39dc510f30b180002"
+  },
+  "fake_lidar_pymavlink.py": {
+    "mtime": 1785396041.049803,
+    "ast_hash": "37e704f7467c05ba52a15640737cebab",
+    "semantic_hash": "37e704f7467c05ba52a15640737cebab"
+  },
+  "fake_lidar_ros2.py": {
+    "mtime": 1785396041.049803,
+    "ast_hash": "d37f5bd3f6835508e68112c820d790d5",
+    "semantic_hash": "d37f5bd3f6835508e68112c820d790d5"
+  },
+  "fix_theme.js": {
+    "mtime": 1785396041.049803,
+    "ast_hash": "9e274c836c3015033b52e40a71430448",
+    "semantic_hash": "9e274c836c3015033b52e40a71430448"
+  },
+  "mavlink_to_supabase.py": {
+    "mtime": 1785396041.0508032,
+    "ast_hash": "17f9144f3a2467f76d6da60a5b6f30dc",
+    "semantic_hash": "17f9144f3a2467f76d6da60a5b6f30dc"
+  },
+  "next.config.ts": {
+    "mtime": 1785396041.0508032,
+    "ast_hash": "9b77af189a21a7a64e4bd7a426f64176",
+    "semantic_hash": "9b77af189a21a7a64e4bd7a426f64176"
+  },
+  "package.json": {
+    "mtime": 1785396041.0528033,
+    "ast_hash": "03d4f18d3ea3320964da192844c9407d",
+    "semantic_hash": "03d4f18d3ea3320964da192844c9407d"
+  },
+  "postcss.config.mjs": {
+    "mtime": 1785396041.0528033,
+    "ast_hash": "239f3ebf717465dc636818a1a619398d",
+    "semantic_hash": "239f3ebf717465dc636818a1a619398d"
+  },
+  "seed_buoys.js": {
+    "mtime": 1785396041.060804,
+    "ast_hash": "a25171441f1d2dd8d7927d27cba7f215",
+    "semantic_hash": "a25171441f1d2dd8d7927d27cba7f215"
+  },
+  "simulate_gps.js": {
+    "mtime": 1785396041.060804,
+    "ast_hash": "0edc1b475c311cba8576bdd7496bb22f",
+    "semantic_hash": "0edc1b475c311cba8576bdd7496bb22f"
+  },
+  "src/app/admin-safinah-secret/page.tsx": {
+    "mtime": 1785396041.0618,
+    "ast_hash": "53d47286d8055ad5f3f7f73d9ed572b0",
+    "semantic_hash": "53d47286d8055ad5f3f7f73d9ed572b0"
+  },
+  "src/app/api/upload/route.ts": {
+    "mtime": 1785396041.0619042,
+    "ast_hash": "07e45fe747c6405f0359ab2f2d1e9207",
+    "semantic_hash": "07e45fe747c6405f0359ab2f2d1e9207"
+  },
+  "src/app/layout.tsx": {
+    "mtime": 1785396041.0619042,
+    "ast_hash": "9b996d5972d310df3d32a8d7bcec6785",
+    "semantic_hash": "9b996d5972d310df3d32a8d7bcec6785"
+  },
+  "src/app/not-found.tsx": {
+    "mtime": 1785396041.0619042,
+    "ast_hash": "b79599311cd0bf0942e394e88f208f2e",
+    "semantic_hash": "b79599311cd0bf0942e394e88f208f2e"
+  },
+  "src/app/page.tsx": {
+    "mtime": 1785396041.0619042,
+    "ast_hash": "71310126aedbac2c1a600a5c25b8af82",
+    "semantic_hash": "71310126aedbac2c1a600a5c25b8af82"
+  },
+  "src/components/dashboard/MapLeaflet.tsx": {
+    "mtime": 1785396041.0624497,
+    "ast_hash": "abc6f5958b0db29f1d7ecc20e974431f",
+    "semantic_hash": "abc6f5958b0db29f1d7ecc20e974431f"
+  },
+  "src/components/dashboard/MissionMapContainer.tsx": {
+    "mtime": 1785396041.0626934,
+    "ast_hash": "cefad9aa3091411a0eaf2eacb068d1cc",
+    "semantic_hash": "cefad9aa3091411a0eaf2eacb068d1cc"
+  },
+  "src/components/dashboard/camera-feeds-panel.tsx": {
+    "mtime": 1785396041.0626934,
+    "ast_hash": "c57efa1e8b83f1b9b6c30afbe6d37891",
+    "semantic_hash": "c57efa1e8b83f1b9b6c30afbe6d37891"
+  },
+  "src/components/dashboard/camera-icon.tsx": {
+    "mtime": 1785396041.0626934,
+    "ast_hash": "6120fef9a473143d123e1945ab406a80",
+    "semantic_hash": "6120fef9a473143d123e1945ab406a80"
+  },
+  "src/components/dashboard/dashboard-header.tsx": {
+    "mtime": 1785396041.0626934,
+    "ast_hash": "66bec86a6591ee427ad8a78c4079265f",
+    "semantic_hash": "66bec86a6591ee427ad8a78c4079265f"
+  },
+  "src/components/dashboard/dashboard-view.tsx": {
+    "mtime": 1785396041.0626934,
+    "ast_hash": "0491ccb5673495177aa0a5bf59e75a92",
+    "semantic_hash": "0491ccb5673495177aa0a5bf59e75a92"
+  },
+  "src/components/dashboard/index.ts": {
+    "mtime": 1785396041.0626934,
+    "ast_hash": "aeba2c5336991e927a7e4c8af944b0d9",
+    "semantic_hash": "aeba2c5336991e927a7e4c8af944b0d9"
+  },
+  "src/components/dashboard/map-panel.tsx": {
+    "mtime": 1785396041.062804,
+    "ast_hash": "a5e4841f71ca1fcfc952bff370e5a1d7",
+    "semantic_hash": "a5e4841f71ca1fcfc952bff370e5a1d7"
+  },
+  "src/components/dashboard/navigation-panel.tsx": {
+    "mtime": 1785396041.062804,
+    "ast_hash": "820e119316966a1f71d103a6af51c8fc",
+    "semantic_hash": "820e119316966a1f71d103a6af51c8fc"
+  },
+  "src/components/dashboard/types.ts": {
+    "mtime": 1785396041.062804,
+    "ast_hash": "e704d2c1b0ac0b3853fa1ce7ea1bab07",
+    "semantic_hash": "e704d2c1b0ac0b3853fa1ce7ea1bab07"
+  },
+  "src/lib/supabaseClient.ts": {
+    "mtime": 1785396041.062804,
+    "ast_hash": "4f35cb22d40d44faf76112878e0c015b",
+    "semantic_hash": "4f35cb22d40d44faf76112878e0c015b"
+  },
+  "src/utils/dashboard-data.ts": {
+    "mtime": 1785396041.062804,
+    "ast_hash": "1e6156a511ce9d99b05f75a626804919",
+    "semantic_hash": "1e6156a511ce9d99b05f75a626804919"
+  },
+  "start_sitl.sh": {
+    "mtime": 1785396041.062804,
+    "ast_hash": "d77312d3f4409031b534cd511ec03815",
+    "semantic_hash": "d77312d3f4409031b534cd511ec03815"
+  },
+  "start_telemetry.sh": {
+    "mtime": 1785396041.062804,
+    "ast_hash": "fd7132008d457b86a8b13085005cb0b6",
+    "semantic_hash": "fd7132008d457b86a8b13085005cb0b6"
+  },
+  "tsconfig.json": {
+    "mtime": 1785396041.062804,
+    "ast_hash": "ee17fd1c97c735e9f3564e3f5251f125",
+    "semantic_hash": "ee17fd1c97c735e9f3564e3f5251f125"
+  },
+  "AGENTS.md": {
+    "mtime": 1785396041.0428026,
+    "ast_hash": "9e09241799026ac05be315a2f0b50055",
+    "semantic_hash": "9e09241799026ac05be315a2f0b50055"
+  },
+  "CLAUDE.md": {
+    "mtime": 1785397017.5268586,
+    "ast_hash": "03e3d38ba74cf8886d3d8fc322d9da8a",
+    "semantic_hash": "03e3d38ba74cf8886d3d8fc322d9da8a"
+  },
+  "OBSTACLE_AVOIDANCE_GUIDE.md": {
+    "mtime": 1785396041.049803,
+    "ast_hash": "3f02b34db4debd9110fbfd81583ee8b1",
+    "semantic_hash": "3f02b34db4debd9110fbfd81583ee8b1"
+  },
+  "README.md": {
+    "mtime": 1785396041.049803,
+    "ast_hash": "f15aaa42d5d299d091b1171097ea56ad",
+    "semantic_hash": "f15aaa42d5d299d091b1171097ea56ad"
+  },
+  "SIMULATION_GUIDE.md": {
+    "mtime": 1785396041.049803,
+    "ast_hash": "b23608e1568de5028d9bfb8fbf266101",
+    "semantic_hash": "b23608e1568de5028d9bfb8fbf266101"
+  },
+  "TELEMETRY_GUIDE.md": {
+    "mtime": 1785396041.049803,
+    "ast_hash": "fdb1bfaaf3d70cd1fa58f86fd3cc5ef1",
+    "semantic_hash": "fdb1bfaaf3d70cd1fa58f86fd3cc5ef1"
+  },
+  "public/test_camera.html": {
+    "mtime": 1785396041.0578036,
+    "ast_hash": "5eecfca182815348cf874fcb43ac4099",
+    "semantic_hash": "5eecfca182815348cf874fcb43ac4099"
+  },
+  "FINAL.png": {
+    "mtime": 1785396041.0488029,
+    "ast_hash": "b7fb9074c0ace0fd747a1404c7475c55",
+    "semantic_hash": "b7fb9074c0ace0fd747a1404c7475c55"
+  },
+  "public/atas.jpeg": {
+    "mtime": 1785396041.0538032,
+    "ast_hash": "ccfba0b66f15d424dd2e0220551dd023",
+    "semantic_hash": "ccfba0b66f15d424dd2e0220551dd023"
+  },
+  "public/atas.svg": {
+    "mtime": 1785396041.0546815,
+    "ast_hash": "ce6f1c3e8b68db486596576828b783d5",
+    "semantic_hash": "ce6f1c3e8b68db486596576828b783d5"
+  },
+  "public/bawah.png": {
+    "mtime": 1785396041.0546815,
+    "ast_hash": "f867adc3b6887685874722fae8bffcb4",
+    "semantic_hash": "f867adc3b6887685874722fae8bffcb4"
+  },
+  "public/bawah.svg": {
+    "mtime": 1785396041.0546815,
+    "ast_hash": "0efebf6e5662add40e7e7e97f8c661fc",
+    "semantic_hash": "0efebf6e5662add40e7e7e97f8c661fc"
+  },
+  "public/bulat_hijau.svg": {
+    "mtime": 1785396041.0546815,
+    "ast_hash": "4878127418d4158920d35104a1f5240a",
+    "semantic_hash": "4878127418d4158920d35104a1f5240a"
+  },
+  "public/bulat_merah.svg": {
+    "mtime": 1785396041.0546815,
+    "ast_hash": "83a1fa65f0af41642a415239b1496e58",
+    "semantic_hash": "83a1fa65f0af41642a415239b1496e58"
+  },
+  "public/file.svg": {
+    "mtime": 1785396041.0546815,
+    "ast_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71",
+    "semantic_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71"
+  },
+  "public/globe.svg": {
+    "mtime": 1785396041.0546815,
+    "ast_hash": "2aaafa6a49b6563925fe440891e32717",
+    "semantic_hash": "2aaafa6a49b6563925fe440891e32717"
+  },
+  "public/hijau.png": {
+    "mtime": 1785396041.0548034,
+    "ast_hash": "b1f32a0c206531cd9ac68a854906db5b",
+    "semantic_hash": "b1f32a0c206531cd9ac68a854906db5b"
+  },
+  "public/kapalasli3.png": {
+    "mtime": 1785396041.0568035,
+    "ast_hash": "b1691895ff43ebf834697ce7539bbf75",
+    "semantic_hash": "b1691895ff43ebf834697ce7539bbf75"
+  },
+  "public/logo.png": {
+    "mtime": 1785396041.0568035,
+    "ast_hash": "ad4dda6103e8bb7efcc40460ec414643",
+    "semantic_hash": "ad4dda6103e8bb7efcc40460ec414643"
+  },
+  "public/merah.png": {
+    "mtime": 1785396041.0568035,
+    "ast_hash": "63253c9005110223eb8aa5643c9e3c3b",
+    "semantic_hash": "63253c9005110223eb8aa5643c9e3c3b"
+  },
+  "public/next.svg": {
+    "mtime": 1785396041.0568035,
+    "ast_hash": "8e061864f388b47f33a1c3780831193e",
+    "semantic_hash": "8e061864f388b47f33a1c3780831193e"
+  },
+  "public/ping.svg": {
+    "mtime": 1785396041.0568035,
+    "ast_hash": "e180d5c02f648fd47447d7a3f55e2ff2",
+    "semantic_hash": "e180d5c02f648fd47447d7a3f55e2ff2"
+  },
+  "public/ship.svg": {
+    "mtime": 1785396041.0568035,
+    "ast_hash": "1dedb4811749b3d0e6185779babab858",
+    "semantic_hash": "1dedb4811749b3d0e6185779babab858"
+  },
+  "public/start.png": {
+    "mtime": 1785396041.0578036,
+    "ast_hash": "4e9c0560f627f0fa44884381a84e2504",
+    "semantic_hash": "4e9c0560f627f0fa44884381a84e2504"
+  },
+  "public/start.svg": {
+    "mtime": 1785396041.0578036,
+    "ast_hash": "81488168f0373908ea6abb7211afa7a5",
+    "semantic_hash": "81488168f0373908ea6abb7211afa7a5"
+  },
+  "public/uploads/1782895401493-logo.png": {
+    "mtime": 1785396041.0578036,
+    "ast_hash": "ad4dda6103e8bb7efcc40460ec414643",
+    "semantic_hash": "ad4dda6103e8bb7efcc40460ec414643"
+  },
+  "public/uploads/1782978293477-camera_SL.jpg": {
+    "mtime": 1785396041.0591793,
+    "ast_hash": "3a2b8885de58a13d519ea27bf2919224",
+    "semantic_hash": "3a2b8885de58a13d519ea27bf2919224"
+  },
+  "public/uploads/1782978295144-camera_UL.jpg": {
+    "mtime": 1785396041.0591793,
+    "ast_hash": "048531caac0bec0331fdc89d56727b0c",
+    "semantic_hash": "048531caac0bec0331fdc89d56727b0c"
+  },
+  "public/uploads/1782978296445-camera_SR.jpg": {
+    "mtime": 1785396041.0591793,
+    "ast_hash": "b57b474ec2470fa123eb1cc6459971fd",
+    "semantic_hash": "b57b474ec2470fa123eb1cc6459971fd"
+  },
+  "public/uploads/1782978298558-camera_UR.jpg": {
+    "mtime": 1785396041.0598037,
+    "ast_hash": "3e60f742e78d9ec87505e6260fb9d70d",
+    "semantic_hash": "3e60f742e78d9ec87505e6260fb9d70d"
+  },
+  "public/uploads/1782978669703-camera_SL.jpg": {
+    "mtime": 1785396041.0598037,
+    "ast_hash": "86514fae13de684ecb1286d70e2b8e51",
+    "semantic_hash": "86514fae13de684ecb1286d70e2b8e51"
+  },
+  "public/uploads/1782978671469-camera_UL.jpg": {
+    "mtime": 1785396041.0598037,
+    "ast_hash": "e8782196bdf024568d26d98845a83087",
+    "semantic_hash": "e8782196bdf024568d26d98845a83087"
+  },
+  "public/uploads/1782978673543-camera_SR.jpg": {
+    "mtime": 1785396041.0598037,
+    "ast_hash": "a1f1af9f5aa3f1ee44eac995d799b7c3",
+    "semantic_hash": "a1f1af9f5aa3f1ee44eac995d799b7c3"
+  },
+  "public/uploads/1782978675546-camera_UR.jpg": {
+    "mtime": 1785396041.060804,
+    "ast_hash": "9334b1b7e4d184705bfa5520c4030d65",
+    "semantic_hash": "9334b1b7e4d184705bfa5520c4030d65"
+  },
+  "public/vercel.svg": {
+    "mtime": 1785396041.060804,
+    "ast_hash": "c0af2f507b369b085b35ef4bbe3bcf1e",
+    "semantic_hash": "c0af2f507b369b085b35ef4bbe3bcf1e"
+  },
+  "public/window.svg": {
+    "mtime": 1785396041.060804,
+    "ast_hash": "a2760511c65806022ad20adf74370ff3",
+    "semantic_hash": "a2760511c65806022ad20adf74370ff3"
+  },
+  "src/app/icon.png": {
+    "mtime": 1785396041.0619042,
+    "ast_hash": "ad4dda6103e8bb7efcc40460ec414643",
+    "semantic_hash": "ad4dda6103e8bb7efcc40460ec414643"
+  }
+}
