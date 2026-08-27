@@ -9,17 +9,14 @@ type NavData = {
   latitude: number;
   longitude: number;
   sog_ms: number;
+  battery_voltage?: number | null;
+  battery_percentage?: number | null;
+  battery_current?: number | null;
   timestamp: string;
 };
 
 type CogData = {
   cog: number;
-  timestamp: string;
-};
-
-type BatteryData = {
-  voltage: number;
-  percentage: number;
   timestamp: string;
 };
 
@@ -50,13 +47,13 @@ export function NavigationPanel({
 }: NavigationPanelProps) {
   const [navData, setNavData] = useState<NavData | null>(null);
   const [cogData, setCogData] = useState<CogData | null>(null);
-  const [batteryData, setBatteryData] = useState<BatteryData | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
+      // Ambil GPS + Kecepatan + Baterai dari tabel nav_data
       const { data: nav } = await supabase
         .from("nav_data")
-        .select("latitude, longitude, timestamp, sog_ms")
+        .select("latitude, longitude, timestamp, sog_ms, battery_voltage, battery_percentage, battery_current")
         .order("timestamp", { ascending: false })
         .limit(1);
       setNavData((nav?.[0] ?? null) as NavData | null);
@@ -67,17 +64,11 @@ export function NavigationPanel({
         .order("timestamp", { ascending: false })
         .limit(1);
       setCogData((cog?.[0] ?? null) as CogData | null);
-      
-      const { data: bat } = await supabase
-        .from("battery_data")
-        .select("voltage, percentage, timestamp")
-        .order("timestamp", { ascending: false })
-        .limit(1);
-      setBatteryData((bat?.[0] ?? null) as BatteryData | null);
     };
 
     loadData();
 
+    // Listener Realtime Navigasi & Baterai
     const navCh = supabase
       .channel("nav_panel_gps_changes")
       .on(
@@ -95,24 +86,14 @@ export function NavigationPanel({
         (payload) => setCogData(payload.new as CogData)
       )
       .subscribe();
-      
-    const batCh = supabase
-      .channel("nav_panel_battery_changes")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "battery_data" },
-        (payload) => setBatteryData(payload.new as BatteryData)
-      )
-      .subscribe();
 
     return () => {
       supabase.removeChannel(navCh);
       supabase.removeChannel(cogCh);
-      supabase.removeChannel(batCh);
     };
   }, []);
 
-  // Auto-advance mission step saat gazebo selesaikan misi
+  // Auto-advance mission step saat ROS/Pixhawk menyelesaikan misi
   useEffect(() => {
     const resolveActiveStep = (m: DataMission): string | null => {
       if (m.finish === "selesai") return "07";
@@ -190,7 +171,8 @@ export function NavigationPanel({
               </p>
             </div>
           ))}
-          {/* Battery section inside the grid */}
+          
+          {/* Battery section - membaca langsung dari navData */}
           <div className="px-4 py-5 col-span-2 border-t border-border flex justify-between items-center bg-foreground/5">
             <div>
               <p className="flex items-center gap-1.5 text-sm font-semibold text-sage-dingin">
@@ -198,7 +180,7 @@ export function NavigationPanel({
                 Battery Level
               </p>
               <p className="mt-1 text-2xl tracking-tight text-kapur-muda">
-                {batteryData?.percentage != null ? `${batteryData.percentage.toFixed(0)}%` : "—"}
+                {navData?.battery_percentage != null ? `${navData.battery_percentage.toFixed(0)}%` : "—"}
               </p>
             </div>
             <div className="text-right">
@@ -207,7 +189,7 @@ export function NavigationPanel({
                 Voltage
               </p>
               <p className="mt-1 text-xl tracking-tight text-kapur-muda">
-                {batteryData?.voltage != null ? `${batteryData.voltage.toFixed(2)} V` : "—"}
+                {navData?.battery_voltage != null ? `${navData.battery_voltage.toFixed(2)} V` : "—"}
               </p>
             </div>
           </div>
