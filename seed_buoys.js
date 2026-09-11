@@ -23,9 +23,12 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// EXACT DB CENTER (from mission_waypoints 'start')
-const originLat = -7.76943801474675;
-const originLon = 110.382921025157;
+// Lokasi lomba sesungguhnya: Waduk PDAM, Bengkalis, Riau (OSM).
+// Sebelumnya lokasi testing Wisdom Park, Yogyakarta -- diganti lewat delta
+// yang sama dipakai untuk menggeser baris mission_waypoints/buoys yang sudah
+// ada, supaya bentuk jalur relatif tidak berubah.
+const originLat = 1.4913966;
+const originLon = 102.1293252;
 
 function getLatLng(dx, dy) {
     const earthRadius = 6378137;

@@ -14,9 +14,11 @@ type MissionName = (typeof MISSION_NAMES)[number];
 
 const waypointTypes: WaypointType[] = ["start", "buoys", "finish", "image_surface", "image_underwater"];
 
+// Dipindah dari lokasi testing (Wisdom Park, Yogyakarta) ke lokasi lomba
+// sesungguhnya: Waduk PDAM, Bengkalis, Riau (1.4913966, 102.1293252 -- OSM).
 const fallbackCenters: Record<MissionName, [number, number]> = {
-  lintasan1: [-7.769386, 110.382935], // Wisdom Park
-  lintasan2: [-7.769617, 110.382935], // Wisdom Park
+  lintasan1: [1.4913966, 102.1293252], // Waduk PDAM, Bengkalis
+  lintasan2: [1.4911656, 102.1293252], // Waduk PDAM, Bengkalis
 };
 
 function makeDefaultWaypoints(center: [number, number]): Waypoints {

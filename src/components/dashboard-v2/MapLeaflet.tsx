@@ -146,7 +146,7 @@ export default function MapLeaflet({
   const runIdRef = useRef(0);
 
   // center yang dikunci
-  const lockedCenterRef = useRef<[number, number]>([-7.7715, 110.3778]);
+  const lockedCenterRef = useRef<[number, number]>([1.4892826, 102.1241902]); // Waduk PDAM, Bengkalis
 
   const guardRef = useRef(false);
 
@@ -166,7 +166,7 @@ export default function MapLeaflet({
   const centerMarkerRef = useRef<L.Marker | null>(null);
 
   const getCenter = (view: string) =>
-    centers[view] ?? [-7.9154834, 112.5891244];
+    centers[view] ?? [1.3452992, 104.3355146]; // Waduk PDAM, Bengkalis (fallback)
 
   /** KUNCI MAP TOTAL */
   const lockMapTotal = (map: L.Map) => {
@@ -421,10 +421,15 @@ export default function MapLeaflet({
 
     mapRef.current = map;
 
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png",
-      { maxZoom: 22 }
-    ).addTo(map);
+    // OpenStreetMap standar: gratis, tanpa API key, tanpa rate-limit khusus
+    // yang bisa jatuh ke 401/403 seperti free tile CARTO. Native cuma sampai
+    // zoom 19; maxNativeZoom membuat Leaflet upscale tile 19 utk zoom 20-22
+    // (dipakai untuk presisi navigasi) alih-alih minta tile yang tidak ada.
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 22,
+      maxNativeZoom: 19,
+      subdomains: "abc",
+    }).addTo(map);
 
     // ✅ bearing fixed 120°
     (map as any).setBearing?.(MAP_BEARING_DEG);
