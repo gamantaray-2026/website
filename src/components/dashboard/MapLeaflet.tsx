@@ -55,6 +55,12 @@ const greenBuoyIcon = L.icon({
   iconSize: [8, 8],
   iconAnchor: [4, 4],
 });
+// Buoy docking (3 bola biru, bukan gerbang navigasi merah/hijau)
+const blueBuoyIcon = L.icon({
+  iconUrl: "/bulat_biru.svg",
+  iconSize: [10, 10],
+  iconAnchor: [5, 5],
+});
 const startIcon = L.icon({
   iconUrl: "/start.png",
   iconSize: [34, 34],
@@ -335,7 +341,12 @@ export default function MapLeaflet({
       if (runIdRef.current !== myRunId) return;
       if (!mapRef.current || mapRef.current !== map) return;
 
-      const icon = buoy.color === "red" ? redBuoyIcon : greenBuoyIcon;
+      const icon =
+        buoy.color === "red"
+          ? redBuoyIcon
+          : buoy.color === "blue"
+          ? blueBuoyIcon
+          : greenBuoyIcon;
 
       const marker = L.marker([buoy.latitude, buoy.longitude], {
         icon,
@@ -429,6 +440,14 @@ export default function MapLeaflet({
       maxZoom: 22,
       maxNativeZoom: 19,
       subdomains: "abc",
+    }).addTo(map);
+
+    // Overlay marka kelautan (OpenSeaMap): buoy, rambu navigasi, kedalaman
+    // -- gratis, tanpa API key, transparan kalau memang tidak ada data
+    // seamark di lokasi ini (waduk kecil), jadi aman ditambahkan tanpa syarat.
+    L.tileLayer("https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png", {
+      maxZoom: 22,
+      maxNativeZoom: 18,
     }).addTo(map);
 
     // ✅ bearing fixed 120°
