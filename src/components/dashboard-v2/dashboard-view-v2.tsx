@@ -11,7 +11,7 @@ import type { DashboardRoute } from "./types";
 export function DashboardViewV2({ forceRole }: { forceRole?: "admin" | "viewer" }) {
   const [activeRoute, setActiveRoute] = useState<DashboardRoute>("A");
   const [activeMissionStepId, setActiveMissionStepId] = useState("01");
-  const [selectedCameraFeed, setSelectedCameraFeed] = useState("SL");
+  const [selectedCameraFeed, setSelectedCameraFeed] = useState("Kamera Kiri");
   const [role, setRole] = useState<"admin" | "viewer">(forceRole ?? "viewer");
 
   return (

@@ -38,7 +38,10 @@ class MavrosToSupabaseNode(Node):
         self.current_lat = 0.0
         self.current_lon = 0.0
         self.current_heading = 0.0
-        
+        self.current_battery_voltage = None
+        self.current_battery_pct = None
+        self.current_battery_current = None
+
         self.last_update = time.time()
         self.update_interval = 1.0  # kirim setiap 1 detik
         
@@ -72,24 +75,22 @@ class MavrosToSupabaseNode(Node):
         now = time.time()
         if now - self.last_update >= self.update_interval:
             try:
-                # Insert Nav Data (Posisi)
+                # Insert Nav Data (Posisi + Baterai)
                 supabase.table("nav_data").insert({
                     "latitude": self.current_lat,
                     "longitude": self.current_lon,
-                    "sog_ms": 0.0 # Nanti bisa diisi dari /mavros/local_position/velocity_local
+                    "sog_ms": 0.0, # Nanti bisa diisi dari /mavros/local_position/velocity_local
+                    "battery_voltage": self.current_battery_voltage,
+                    "battery_percentage": self.current_battery_pct,
+                    "battery_current": self.current_battery_current,
                 }).execute()
-                
+
                 # Insert Heading (Arah)
                 supabase.table("cog_data").insert({
                     "cog": self.current_heading
                 }).execute()
-                
-                # Insert Baterai (Opsional jika Anda mau menambahkan tabel battery_data)
-                if hasattr(self, 'current_battery_voltage'):
-                    # supabase.table("battery_data").insert({"voltage": self.current_battery_voltage, "percentage": self.current_battery_pct}).execute()
-                    pass
-                
-                self.get_logger().info(f"[Supabase Sync] Terkirim! Lat: {self.current_lat:.6f}, Lon: {self.current_lon:.6f}, Hdg: {self.current_heading:.1f}")
+
+                self.get_logger().info(f"[Supabase Sync] Terkirim! Lat: {self.current_lat:.6f}, Lon: {self.current_lon:.6f}, Hdg: {self.current_heading:.1f}, Batt: {self.current_battery_voltage}V")
                 self.last_update = now
             except Exception as e:
                 self.get_logger().error(f"Error ke Supabase: {e}")
@@ -97,6 +98,7 @@ class MavrosToSupabaseNode(Node):
     def battery_callback(self, msg):
         self.current_battery_voltage = msg.voltage
         self.current_battery_pct = msg.percentage * 100.0  # diubah ke persen
+        self.current_battery_current = msg.current
 
 def main(args=None):
     rclpy.init(args=args)

@@ -1,16 +1,21 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { CameraIcon } from "./camera-icon";
 import { Video } from "lucide-react";
 
-type CameraFeed = {
-  title: string;
-  label: string;
-  imageUrl?: string;
+type ImageMissionRow = {
+  image_slot_name: string;
+  image_url: string;
 };
+
+function getCacheBustedUrl(imageUrl: string, refreshKey: number) {
+  const url = new URL(imageUrl);
+  url.searchParams.set("t", String(refreshKey));
+  return url.toString();
+}
 
 function CameraCard({
   title,
@@ -45,7 +50,7 @@ function CameraCard({
       <div className="flex min-h-56 flex-col items-center justify-center gap-3 text-sage-dingin relative overflow-hidden bg-black/20 rounded-md">
         {imageUrl ? (
           <img
-            src={`${imageUrl}?t=${refreshKey}`}
+            src={getCacheBustedUrl(imageUrl, refreshKey)}
             alt={label}
             className="absolute inset-0 h-full w-full object-cover opacity-90"
           />
@@ -73,9 +78,8 @@ export function CameraFeedsPanel({
   onFeedSelect,
   activeRoute = "A",
 }: CameraFeedsPanelProps) {
-  const refreshKey = useRef<number>(Date.now());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [imageMap, setImageMap] = useState<Record<string, any>>({});
+  const [refreshKey] = useState(() => Date.now());
+  const [imageMap, setImageMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const loadImages = async () => {
@@ -86,7 +90,7 @@ export function CameraFeedsPanel({
         .limit(10);
       if (!error && data) {
         const newMap: Record<string, string> = {};
-        data.forEach((row: any) => {
+        data.forEach((row: ImageMissionRow) => {
           if (!newMap[row.image_slot_name]) {
             newMap[row.image_slot_name] = row.image_url;
           }
@@ -103,8 +107,11 @@ export function CameraFeedsPanel({
         { event: "INSERT", schema: "public", table: "image_mission" },
         (payload) => {
           console.log("Realtime Payload Received:", payload);
-          const row = payload.new as any;
-          setImageMap((prev) => ({ ...prev, [row.image_slot_name]: row.image_url }));
+          const row = payload.new as ImageMissionRow;
+          setImageMap((prev) => ({
+            ...prev,
+            [row.image_slot_name]: row.image_url,
+          }));
         }
       )
       .subscribe((status) => {
@@ -162,7 +169,7 @@ export function CameraFeedsPanel({
                 title={feed.title}
                 label={feed.label}
                 imageUrl={imgUrl}
-                refreshKey={refreshKey.current}
+                refreshKey={refreshKey}
                 isSelected={feed.title === selectedFeedTitle}
                 onSelect={() => {
                   onFeedSelect(feed.title);
@@ -180,8 +187,8 @@ export function CameraFeedsPanel({
           onClick={() => setIsModalOpen(false)}
         >
           <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
-            <img 
-              src={`${modalImage}?t=${refreshKey.current}`} 
+            <img
+              src={getCacheBustedUrl(modalImage, refreshKey)}
               alt="Fullscreen Camera Feed" 
               className="max-w-full max-h-[90vh] object-contain border-2 border-lime-neon rounded-lg shadow-2xl"
             />
