@@ -123,25 +123,28 @@ export function CameraFeedsPanel({
     };
   }, []);
 
-  const CAMERA_BASE_DATA = activeRoute === "A" 
+  // Sama dengan MISSION_PLAN RasPi: A = UL + SR, B = SL + UR.
+  const CAMERA_BASE_DATA = activeRoute === "A"
     ? [
-        { title: "Kamera Kiri", label: "Kamera Bawah", slotKey: "bawah" },
-        { title: "Kamera Kanan", label: "Kamera Atas", slotKey: "atas" },
+        { title: "Underwater Left (UL)", label: "Underwater Left", slotKey: "UL" },
+        { title: "Surface Right (SR)", label: "Surface Right", slotKey: "SR" },
       ]
     : [
-        { title: "Kamera Kiri", label: "Kamera Atas", slotKey: "atas" },
-        { title: "Kamera Kanan", label: "Kamera Bawah", slotKey: "bawah" },
+        { title: "Surface Left (SL)", label: "Surface Left", slotKey: "SL" },
+        { title: "Underwater Right (UR)", label: "Underwater Right", slotKey: "UR" },
       ];
 
-  const getImgUrl = (slotKey: string) => {
-    if (slotKey === "atas") {
-       return imageMap["atas"] ?? imageMap["SL"] ?? imageMap["SR"];
-    }
-    if (slotKey === "bawah") {
-       return imageMap["bawah"] ?? imageMap["UL"] ?? imageMap["UR"];
-    }
-    return imageMap[slotKey];
+  const LEGACY_SLOT_KEYS: Record<string, string[]> = {
+    SL: ["atas_kiri", "atas"],
+    UL: ["bawah_kiri", "bawah"],
+    SR: ["atas_kanan", "atas"],
+    UR: ["bawah_kanan", "bawah"],
   };
+
+  const getImgUrl = (slotKey: string) =>
+    [slotKey, ...(LEGACY_SLOT_KEYS[slotKey] ?? [])]
+      .map((key) => imageMap[key])
+      .find(Boolean);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState("");
